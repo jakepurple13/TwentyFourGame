@@ -48,9 +48,11 @@ kotlin {
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.datastore.core)
             implementation(libs.datastore.preferences)
+            implementation(libs.kotlinx.coroutines.core)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
+            implementation(libs.kotlinx.coroutines.swing)
         }
     }
 }
