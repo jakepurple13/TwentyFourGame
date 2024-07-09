@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -221,7 +220,7 @@ fun CalculatorButtonGrid(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier,
     ) {
-        itemsIndexed(fourNumbers) { index, action ->
+        items(fourNumbers) { action ->
             CalculatorButton(
                 action = action,
                 enabled = action.enabled,

@@ -165,9 +165,9 @@ class ExpressionParser(
 
 /**
  * Uses the following grammar
- * expression :	term | term + term | term − term
- * term :		factor | factor * factor | factor / factor | factor % factor
- * factor : 	number | ( expression ) | + factor | − factor
+ * expression:	term | term + term | term − term
+ * term:	factor | factor * factor | factor / factor | factor % factor
+ * factor: number | (expression) | + factor | − factor
  */
 class ExpressionEvaluator(
     private val expression: List<ExpressionPart>,

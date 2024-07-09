@@ -17,12 +17,13 @@ class TwentyFourViewModel(
 ) : ViewModel() {
 
     var answer by mutableStateOf("")
+        private set
 
     private var fourNumbers by mutableStateOf(IntArray(4) { Random.nextInt(1, 10) })
 
-    private val enabledNumbers = mutableStateListOf<Boolean>(true, true, true, true)
+    private val enabledNumbers = mutableStateListOf(true, true, true, true)
 
-    private var lastNumberIndex = mutableListOf<Int?>()
+    private val lastNumberIndex = mutableListOf<Int?>()
 
     val fourCalculate by derivedStateOf {
         fourNumbers.mapIndexed { index, i ->
@@ -36,6 +37,7 @@ class TwentyFourViewModel(
     }
 
     var showAnswer by mutableStateOf(false)
+        private set
 
     val canSubmit by derivedStateOf {
         enabledNumbers.all { !it }
