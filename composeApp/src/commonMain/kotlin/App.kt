@@ -81,9 +81,7 @@ fun TwentyFourGame(
 
             AnimatedVisibility(
                 viewModel.showAnswer
-            ) {
-                AnswerDisplay(viewModel.answer)
-            }
+            ) { AnswerDisplay(viewModel.answer) }
 
             Spacer(modifier = Modifier.height(8.dp))
             CalculatorButtonGrid(
@@ -97,7 +95,7 @@ fun TwentyFourGame(
                 noSolve = viewModel::noSolve,
                 onShowInstructions = { showInstructions = true },
                 canSubmit = viewModel.canSubmit,
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
     }
@@ -145,7 +143,8 @@ fun AnswerDisplay(
             headlineContent = {
                 Text(
                     answer,
-                    fontSize = 40.sp
+                    fontSize = 40.sp,
+                    lineHeight = 30.sp
                 )
             }
         )
