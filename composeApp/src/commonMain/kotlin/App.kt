@@ -1,5 +1,6 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -17,12 +18,14 @@ import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +64,7 @@ fun TwentyFourGame(
         ) {
             CalculatorDisplay(
                 expression = viewModel.expression,
+                fullExpression = viewModel.fullExpression,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -73,6 +77,8 @@ fun TwentyFourGame(
                     .background(MaterialTheme.colorScheme.secondaryContainer)
                     .padding(horizontal = 16.dp)
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             AnimatedVisibility(
                 viewModel.showAnswer
@@ -147,9 +153,11 @@ fun AnswerDisplay(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalculatorDisplay(
     expression: String,
+    fullExpression: String,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -168,7 +176,24 @@ fun CalculatorDisplay(
             singleLine = true,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             readOnly = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            decorationBox = {
+                TextFieldDefaults.DecorationBox(
+                    value = expression,
+                    innerTextField = it,
+                    label = {
+                        Text(
+                            fullExpression,
+                            fontSize = 20.sp,
+                        )
+                    },
+                    enabled = true,
+                    singleLine = true,
+                    interactionSource = remember { MutableInteractionSource() },
+                    visualTransformation = VisualTransformation.None,
+                    container = {}
+                )
+            },
         )
     }
 }

@@ -41,6 +41,9 @@ class TwentyFourViewModel(
         enabledNumbers.all { !it }
     }
 
+    var fullExpression by mutableStateOf("")
+        private set
+
     var expression by mutableStateOf("")
         private set
 
@@ -96,6 +99,7 @@ class TwentyFourViewModel(
         showAnswer = false
         answer = ""
         expression = ""
+        fullExpression = ""
         for (i in enabledNumbers.indices) {
             enabledNumbers[i] = true
         }
@@ -105,6 +109,7 @@ class TwentyFourViewModel(
 
     fun submit() {
         if (enabledNumbers.all { !it }) {
+            fullExpression = expression
             writer.processAction(CalculatorAction.Calculate)
             expression = writer.expression
             expression
