@@ -22,7 +22,7 @@ class TwentyFourViewModel(
 
     private val enabledNumbers = mutableStateListOf<Boolean>(true, true, true, true)
 
-    private var lastNumberIndex = mutableListOf<Int>()
+    private var lastNumberIndex = mutableListOf<Int?>()
 
     val fourCalculate by derivedStateOf {
         fourNumbers.mapIndexed { index, i ->
@@ -30,12 +30,16 @@ class TwentyFourViewModel(
                 text = "$i",
                 highlightLevel = HighlightLevel.Neutral,
                 enabled = enabledNumbers.getOrElse(index) { true },
-                action = CalculatorAction.Number(i)
+                action = CalculatorAction.Number(i, index)
             )
         }
     }
 
     var showAnswer by mutableStateOf(false)
+
+    val canSubmit by derivedStateOf {
+        enabledNumbers.all { !it }
+    }
 
     var expression by mutableStateOf("")
         private set
@@ -52,6 +56,7 @@ class TwentyFourViewModel(
                 for (i in enabledNumbers.indices) {
                     enabledNumbers[i] = true
                 }
+                lastNumberIndex.clear()
             }
 
             CalculatorAction.Delete -> {
@@ -60,7 +65,14 @@ class TwentyFourViewModel(
                 }
             }
 
-            else -> {}
+            is CalculatorAction.Number -> {
+                lastNumberIndex.add(action.index)
+                enabledNumbers[action.index] = false
+            }
+
+            else -> {
+                lastNumberIndex.add(null)
+            }
         }
         writer.processAction(action)
         this.expression = writer.expression
@@ -92,22 +104,19 @@ class TwentyFourViewModel(
     }
 
     fun submit() {
-        writer.processAction(CalculatorAction.Calculate)
-        expression = writer.expression
-        expression
-            .toDoubleOrNull()
-            ?.roundToInt()
-            ?.let {
-                if (it == 24) {
-                    showAnswer = true
-                    answer = "Correct!"
+        if (enabledNumbers.all { !it }) {
+            writer.processAction(CalculatorAction.Calculate)
+            expression = writer.expression
+            expression
+                .toDoubleOrNull()
+                ?.roundToInt()
+                ?.let {
+                    if (it == 24) {
+                        showAnswer = true
+                        answer = "Correct!"
+                    }
                 }
-            }
-    }
-
-    fun onNumberPress(index: Int) {
-        enabledNumbers[index] = false
-        lastNumberIndex.add(index)
+        }
     }
 
     fun noSolve() {

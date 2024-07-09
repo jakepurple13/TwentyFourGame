@@ -24,14 +24,14 @@ class Settings(
 
         val INSTRUCTIONS = booleanPreferencesKey("show_instructions")
 
-        val CURRENT_NUMBERS = stringSetPreferencesKey("current_numbers")
+        val CURRENT_NUMBERS = stringPreferencesKey("current_numbers")
     }
 
     private val defaultFour = IntArray(4) { Random(it).nextInt(1, 10) }
 
     fun currentNumbers() = dataStore.data.map {
         it[CURRENT_NUMBERS]
-            ?.map { number -> number.toInt() }
+            ?.map { number -> number.toString().toInt() }
             ?.toIntArray()
             ?: defaultFour
     }
@@ -40,13 +40,16 @@ class Settings(
         newNumbers: IntArray,
     ) {
         dataStore.edit {
-            it[CURRENT_NUMBERS] = newNumbers.map { number -> number.toString() }.toSet()
+            it[CURRENT_NUMBERS] = newNumbers.joinToString("") { number -> number.toString() }
         }
     }
 }
 
 @Composable
-fun rememberShowInstructions() = rememberPreference(Settings.INSTRUCTIONS, false)
+fun rememberShowInstructions() = rememberPreference(
+    key = Settings.INSTRUCTIONS,
+    defaultValue = false
+)
 
 @Composable
 fun <T> rememberPreference(

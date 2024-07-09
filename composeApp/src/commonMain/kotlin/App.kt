@@ -9,7 +9,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.HideSource
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -85,9 +89,9 @@ fun TwentyFourGame(
                 onGiveUp = viewModel::giveUp,
                 onRestart = viewModel::restart,
                 showRestart = viewModel.showAnswer,
-                onNumberPress = viewModel::onNumberPress,
                 noSolve = viewModel::noSolve,
                 onShowInstructions = { showInstructions = true },
+                canSubmit = viewModel.canSubmit,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -174,13 +178,13 @@ fun CalculatorButtonGrid(
     fourNumbers: List<CalculatorUiAction>,
     actions: List<CalculatorUiAction>,
     onAction: (CalculatorAction) -> Unit,
-    onNumberPress: (Int) -> Unit,
     onSubmit: () -> Unit,
     onGiveUp: () -> Unit,
     onRestart: () -> Unit,
     showRestart: Boolean,
     noSolve: () -> Unit,
     onShowInstructions: () -> Unit,
+    canSubmit: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val minSize = buttonSize()
@@ -197,10 +201,7 @@ fun CalculatorButtonGrid(
                 action = action,
                 enabled = action.enabled,
                 modifier = minSize,
-                onClick = {
-                    onNumberPress(index)
-                    onAction(action.action)
-                }
+                onClick = { onAction(action.action) }
             )
         }
 
@@ -218,7 +219,7 @@ fun CalculatorButtonGrid(
                     highlightLevel = HighlightLevel.StronglyHighlighted,
                     action = CalculatorAction.Calculate
                 ),
-                enabled = !showRestart,
+                enabled = !showRestart && canSubmit,
                 modifier = minSize,
                 onClick = onSubmit
             )
@@ -240,7 +241,7 @@ fun CalculatorButtonGrid(
                 CalculatorButton(
                     action = CalculatorUiAction(
                         text = null,
-                        content = { Icon(Icons.Default.RemoveDone, null) },
+                        content = { Icon(Icons.AutoMirrored.Filled.Logout, null) },
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
@@ -267,7 +268,7 @@ fun CalculatorButtonGrid(
                 CalculatorButton(
                     action = CalculatorUiAction(
                         text = null,
-                        content = { Icon(Icons.Default.DoNotDisturb, null) },
+                        content = { Icon(Icons.Default.QuestionMark, null) },
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
