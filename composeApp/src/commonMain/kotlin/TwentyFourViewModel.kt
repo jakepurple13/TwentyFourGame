@@ -133,7 +133,7 @@ class TwentyFourViewModel(
                 answer = "There is a solution."
             } else {
                 showAnswer = true
-                answer = "Correct!"
+                answer = "There is no solution."
             }
         }
     }
