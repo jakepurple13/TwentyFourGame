@@ -1,7 +1,5 @@
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -11,9 +9,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,27 +22,33 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.jetbrains.compose.resources.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
-
-import twentyfourgame.composeapp.generated.resources.Res
-import twentyfourgame.composeapp.generated.resources.compose_multiplatform
-import kotlin.random.Random
 
 @Composable
 @Preview
-fun App() {
+fun App(
+    settings: Settings,
+) {
     MaterialTheme {
-        TwentyFourGame()
+        Scaffold { padding ->
+            TwentyFourGame(
+                viewModel = viewModel { TwentyFourViewModel(settings = settings) },
+                modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
+            )
+        }
     }
 }
 
 @Composable
 fun TwentyFourGame(
-    viewModel: TwentyFourViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    viewModel: TwentyFourViewModel = viewModel(),
+    modifier: Modifier = Modifier,
 ) {
+    var showInstructions by rememberShowInstructions()
+
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column(
@@ -81,9 +87,33 @@ fun TwentyFourGame(
                 showRestart = viewModel.showAnswer,
                 onNumberPress = viewModel::onNumberPress,
                 noSolve = viewModel::noSolve,
+                onShowInstructions = { showInstructions = true },
                 modifier = Modifier.padding(8.dp)
             )
         }
+    }
+
+    if (showInstructions) {
+        AlertDialog(
+            onDismissRequest = { showInstructions = false },
+            title = { Text("24 Game Instructions") },
+            text = {
+                Text(
+                    """
+                        The 24 puzzle is an arithmetical puzzle in which the objective is to find a way to manipulate four integers so that the end result is 24.
+                        For example, for the numbers 4, 7, 8, 8, a possible solution is 
+                        (7 - (8/8)) * 4 = 24
+                        
+                        There might be multiple solutions!
+                    """.trimIndent()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { showInstructions = false }
+                ) { Text("OK") }
+            }
+        )
     }
 }
 
@@ -106,7 +136,7 @@ fun AnswerDisplay(
             headlineContent = {
                 Text(
                     answer,
-                    fontSize = 80.sp
+                    fontSize = 40.sp
                 )
             }
         )
@@ -126,7 +156,7 @@ fun CalculatorDisplay(
             value = expression,
             onValueChange = {},
             textStyle = TextStyle(
-                fontSize = 80.sp,
+                fontSize = 40.sp,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 textAlign = TextAlign.End
             ),
@@ -150,10 +180,10 @@ fun CalculatorButtonGrid(
     onRestart: () -> Unit,
     showRestart: Boolean,
     noSolve: () -> Unit,
+    onShowInstructions: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    //TODO: Maybe make this aspect 1f if on phone?
-    val minSize = Modifier.sizeIn(minWidth = 50.dp, minHeight = 50.dp)
+    val minSize = buttonSize()
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(4),
@@ -198,7 +228,8 @@ fun CalculatorButtonGrid(
             if (showRestart) {
                 CalculatorButton(
                     action = CalculatorUiAction(
-                        text = "Restart",
+                        text = null,
+                        content = { Icon(Icons.Default.RestartAlt, null) },
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
@@ -208,7 +239,8 @@ fun CalculatorButtonGrid(
             } else {
                 CalculatorButton(
                     action = CalculatorUiAction(
-                        text = "Give Up",
+                        text = null,
+                        content = { Icon(Icons.Default.RemoveDone, null) },
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
@@ -219,10 +251,11 @@ fun CalculatorButtonGrid(
         }
 
         item {
-            if(showRestart) {
+            if (showRestart) {
                 CalculatorButton(
                     action = CalculatorUiAction(
-                        text = "Hide",
+                        text = null,
+                        content = { Icon(Icons.Default.HideSource, null) },
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
@@ -233,7 +266,8 @@ fun CalculatorButtonGrid(
             } else {
                 CalculatorButton(
                     action = CalculatorUiAction(
-                        text = "No Solve",
+                        text = null,
+                        content = { Icon(Icons.Default.DoNotDisturb, null) },
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
@@ -242,6 +276,19 @@ fun CalculatorButtonGrid(
                     onClick = noSolve
                 )
             }
+        }
+
+        item {
+            CalculatorButton(
+                action = CalculatorUiAction(
+                    text = null,
+                    content = { Icon(Icons.Default.Info, null) },
+                    highlightLevel = HighlightLevel.StronglyHighlighted,
+                    action = CalculatorAction.Calculate
+                ),
+                modifier = minSize,
+                onClick = onShowInstructions
+            )
         }
     }
 }
@@ -253,27 +300,27 @@ fun CalculatorButton(
     enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
-    TextButton(
-        onClick,
-        enabled = enabled,
-        shape = CircleShape,
-        colors = ButtonDefaults.textButtonColors(
-            containerColor = when (action.highlightLevel) {
-                HighlightLevel.Neutral -> MaterialTheme.colorScheme.surfaceVariant
-                HighlightLevel.SemiHighlighted -> MaterialTheme.colorScheme.inverseSurface
-                HighlightLevel.Highlighted -> MaterialTheme.colorScheme.tertiary
-                HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.primary
-            },
-            contentColor = when (action.highlightLevel) {
-                is HighlightLevel.Neutral -> MaterialTheme.colorScheme.onSurfaceVariant
-                is HighlightLevel.SemiHighlighted -> MaterialTheme.colorScheme.inverseOnSurface
-                is HighlightLevel.Highlighted -> MaterialTheme.colorScheme.onTertiary
-                is HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.onPrimary
-            }
-        ),
-        modifier = modifier
-    ) {
-        if (action.text != null) {
+    if (action.text != null) {
+        TextButton(
+            onClick,
+            enabled = enabled,
+            shape = CircleShape,
+            colors = ButtonDefaults.textButtonColors(
+                containerColor = when (action.highlightLevel) {
+                    HighlightLevel.Neutral -> MaterialTheme.colorScheme.surfaceVariant
+                    HighlightLevel.SemiHighlighted -> MaterialTheme.colorScheme.inverseSurface
+                    HighlightLevel.Highlighted -> MaterialTheme.colorScheme.tertiary
+                    HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.primary
+                },
+                contentColor = when (action.highlightLevel) {
+                    is HighlightLevel.Neutral -> MaterialTheme.colorScheme.onSurfaceVariant
+                    is HighlightLevel.SemiHighlighted -> MaterialTheme.colorScheme.inverseOnSurface
+                    is HighlightLevel.Highlighted -> MaterialTheme.colorScheme.onTertiary
+                    is HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.onPrimary
+                }
+            ),
+            modifier = modifier
+        ) {
             Text(
                 text = action.text,
                 fontSize = 36.sp,
@@ -285,7 +332,27 @@ fun CalculatorButton(
                     is HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.onPrimary
                 }
             )
-        } else {
+        }
+    } else {
+        IconButton(
+            onClick,
+            enabled = enabled,
+            colors = IconButtonDefaults.iconButtonColors(
+                containerColor = when (action.highlightLevel) {
+                    HighlightLevel.Neutral -> MaterialTheme.colorScheme.surfaceVariant
+                    HighlightLevel.SemiHighlighted -> MaterialTheme.colorScheme.inverseSurface
+                    HighlightLevel.Highlighted -> MaterialTheme.colorScheme.tertiary
+                    HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.primary
+                },
+                contentColor = when (action.highlightLevel) {
+                    is HighlightLevel.Neutral -> MaterialTheme.colorScheme.onSurfaceVariant
+                    is HighlightLevel.SemiHighlighted -> MaterialTheme.colorScheme.inverseOnSurface
+                    is HighlightLevel.Highlighted -> MaterialTheme.colorScheme.onTertiary
+                    is HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.onPrimary
+                }
+            ),
+            modifier = modifier
+        ) {
             action.content()
         }
     }

@@ -45,7 +45,9 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+            implementation(libs.lifecycle.viewmodel.compose)
+            implementation(libs.datastore.core)
+            implementation(libs.datastore.preferences)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -76,6 +78,12 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+        }
+
+        create("beta") {
+            initWith(getByName("debug"))
+            matchingFallbacks.addAll(listOf("debug", "release"))
+            isDebuggable = false
         }
     }
     compileOptions {

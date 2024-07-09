@@ -2,6 +2,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.remember
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import java.util.*
@@ -14,7 +15,9 @@ fun main() = application {
         MaterialTheme(
             if(isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
         ) {
-            App()
+            App(
+                settings = remember { Settings { Settings.DATA_STORE_FILE_NAME } }
+            )
         }
     }
 }

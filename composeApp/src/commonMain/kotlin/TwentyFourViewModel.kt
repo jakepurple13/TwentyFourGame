@@ -1,15 +1,19 @@
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
 class TwentyFourViewModel(
     private val writer: ExpressionWriter = ExpressionWriter(),
+    private val settings: Settings,
 ) : ViewModel() {
 
     var answer by mutableStateOf("")
@@ -35,6 +39,12 @@ class TwentyFourViewModel(
 
     var expression by mutableStateOf("")
         private set
+
+    init {
+        settings.currentNumbers()
+            .onEach { fourNumbers = it }
+            .launchIn(viewModelScope)
+    }
 
     fun onAction(action: CalculatorAction) {
         when (action) {
@@ -68,7 +78,9 @@ class TwentyFourViewModel(
     }
 
     fun restart() {
-        fourNumbers = IntArray(4) { Random.nextInt(1, 10) }
+        viewModelScope.launch {
+            settings.updateCurrentNumbers(IntArray(4) { Random.nextInt(1, 10) })
+        }
         showAnswer = false
         answer = ""
         expression = ""
@@ -140,11 +152,6 @@ fun calculatorActions() = listOf(
         action = CalculatorAction.Parentheses
     ),
     CalculatorUiAction(
-        text = "%",
-        highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Op(Operation.PERCENT)
-    ),
-    CalculatorUiAction(
         text = "÷",
         highlightLevel = HighlightLevel.SemiHighlighted,
         action = CalculatorAction.Op(Operation.DIVIDE)
@@ -165,7 +172,7 @@ fun calculatorActions() = listOf(
         action = CalculatorAction.Op(Operation.ADD)
     ),
     CalculatorUiAction(
-        text = "←",
+        text = null,
         content = {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,

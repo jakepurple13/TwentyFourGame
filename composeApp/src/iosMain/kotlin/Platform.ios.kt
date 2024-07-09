@@ -1,3 +1,5 @@
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.ui.Modifier
 import platform.UIKit.UIDevice
 
 class IOSPlatform: Platform {
@@ -5,3 +7,5 @@ class IOSPlatform: Platform {
 }
 
 actual fun getPlatform(): Platform = IOSPlatform()
+
+actual fun buttonSize(): Modifier = Modifier.aspectRatio(1f)
