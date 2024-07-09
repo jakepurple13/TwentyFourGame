@@ -95,6 +95,8 @@ fun TwentyFourGame(
                 noSolve = viewModel::noSolve,
                 onShowInstructions = { showInstructions = true },
                 canSubmit = viewModel.canSubmit,
+                onUndo = viewModel::undo,
+                canUndo = viewModel.fullExpression.isNotEmpty(),
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
@@ -208,6 +210,8 @@ fun CalculatorButtonGrid(
     noSolve: () -> Unit,
     onShowInstructions: () -> Unit,
     canSubmit: Boolean,
+    onUndo: () -> Unit,
+    canUndo: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val minSize = buttonSize()
@@ -235,16 +239,18 @@ fun CalculatorButtonGrid(
                 onClick = { onAction(action.action) }
             )
         }
+
         item {
             CalculatorButton(
                 action = CalculatorUiAction(
-                    text = "✓",
+                    text = null,
+                    content = { Icon(UndoIcon, null) },
                     highlightLevel = HighlightLevel.StronglyHighlighted,
                     action = CalculatorAction.Calculate
                 ),
-                enabled = !showRestart && canSubmit,
+                enabled = canUndo,
                 modifier = minSize,
-                onClick = onSubmit
+                onClick = onUndo
             )
         }
 
@@ -312,6 +318,19 @@ fun CalculatorButtonGrid(
                 ),
                 modifier = minSize,
                 onClick = onShowInstructions
+            )
+        }
+
+        item {
+            CalculatorButton(
+                action = CalculatorUiAction(
+                    text = "✓",
+                    highlightLevel = HighlightLevel.StronglyHighlighted,
+                    action = CalculatorAction.Calculate
+                ),
+                enabled = !showRestart && canSubmit,
+                modifier = minSize,
+                onClick = onSubmit
             )
         }
     }

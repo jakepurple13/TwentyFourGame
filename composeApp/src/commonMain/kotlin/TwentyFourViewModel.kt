@@ -140,6 +140,11 @@ class TwentyFourViewModel(
             }
         }
     }
+
+    fun undo() {
+        writer.expression = fullExpression
+        expression = fullExpression
+    }
 }
 
 data class CalculatorUiAction(
