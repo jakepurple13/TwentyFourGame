@@ -10,7 +10,7 @@ import java.util.*
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "TwentyFourGame",
+        title = "24 Game",
     ) {
         MaterialTheme(
             if(isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()

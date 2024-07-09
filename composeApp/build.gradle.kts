@@ -106,8 +106,22 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.programmersbox.twentyfourgame"
+            packageName = "24 Game"
             packageVersion = "1.0.0"
+
+            fun iconFile(extension: String) =
+                project.file("src/commonMain/composeResources/drawable/twentyfourlogo.$extension")
+            macOS {
+                iconFile.set(iconFile("icns"))
+            }
+            windows {
+                iconFile.set(iconFile("ico"))
+                dirChooser = true
+                console = true
+            }
+            linux {
+                iconFile.set(iconFile("png"))
+            }
         }
     }
 }
