@@ -71,6 +71,7 @@ class TwentyFourViewModel(
             }
 
             is CalculatorAction.Number -> {
+                if (lastNumberIndex.lastOrNull() is Int) return
                 lastNumberIndex.add(action.index)
                 enabledNumbers[action.index] = false
             }
