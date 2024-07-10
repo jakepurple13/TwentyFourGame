@@ -27,6 +27,8 @@ class Settings(
         val CURRENT_NUMBERS = stringPreferencesKey("current_numbers")
 
         val HARD_MODE = booleanPreferencesKey("hard_mode")
+
+        val THEME_COLOR = stringPreferencesKey("theme_color")
     }
 
     private val defaultFour = IntArray(4) { Random(it).nextInt(1, 10) }
@@ -64,6 +66,20 @@ fun rememberShowInstructions() = rememberPreference(
 )
 
 @Composable
+fun rememberHardMode() = rememberPreference(
+    key = Settings.HARD_MODE,
+    defaultValue = false
+)
+
+@Composable
+fun rememberThemeColor() = rememberPreference(
+    key = Settings.THEME_COLOR,
+    mapToKey = { it.name },
+    mapToType = { runCatching { ThemeColor.valueOf(it) }.getOrDefault(ThemeColor.Dynamic) },
+    defaultValue = ThemeColor.Dynamic
+)
+
+@Composable
 fun <T> rememberPreference(
     key: Preferences.Key<T>,
     defaultValue: T,
@@ -92,6 +108,41 @@ fun <T> rememberPreference(
 
             override fun component1() = value
             override fun component2(): (T) -> Unit = { value = it }
+        }
+    }
+}
+
+@Composable
+fun <T, R> rememberPreference(
+    key: Preferences.Key<T>,
+    mapToType: (T) -> R?,
+    mapToKey: (R) -> T,
+    defaultValue: R,
+): MutableState<R> {
+    val coroutineScope = rememberCoroutineScope()
+    val state by remember(::dataStore.isInitialized) {
+        if (::dataStore.isInitialized) {
+            dataStore
+                .data
+                .mapNotNull { it[key]?.let(mapToType) ?: defaultValue }
+                .distinctUntilChanged()
+        } else {
+            emptyFlow()
+        }
+    }.collectAsState(defaultValue)
+
+    return remember(state) {
+        object : MutableState<R> {
+            override var value: R
+                get() = state
+                set(value) {
+                    coroutineScope.launch {
+                        dataStore.edit { it[key] = value.let(mapToKey) }
+                    }
+                }
+
+            override fun component1() = value
+            override fun component2(): (R) -> Unit = { value = it }
         }
     }
 }

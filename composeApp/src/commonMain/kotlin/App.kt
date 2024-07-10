@@ -1,6 +1,11 @@
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -10,15 +15,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.HideSource
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.QuestionMark
-import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +29,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.materialkolor.rememberDynamicColorScheme
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -37,11 +38,77 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun App(
     settings: Settings,
 ) {
-    MaterialTheme {
+    TwentyFourTheme {
         TwentyFourGame(
             viewModel = viewModel { TwentyFourViewModel(settings = settings) },
         )
     }
+}
+
+@Composable
+fun TwentyFourTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    // Dynamic color is available on Android 12+
+    dynamicColor: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    val themeColor by rememberThemeColor()
+
+    val animationSpec = spring<Color>(stiffness = Spring.StiffnessLow)
+
+    val colorScheme = when (themeColor) {
+        ThemeColor.Dynamic -> colorSchemeSetup(darkTheme, dynamicColor)
+        else -> rememberDynamicColorScheme(themeColor.seedColor, darkTheme)
+    }.let { colorScheme ->
+        colorScheme.copy(
+            primary = colorScheme.primary.animate(animationSpec),
+            primaryContainer = colorScheme.primaryContainer.animate(animationSpec),
+            secondary = colorScheme.secondary.animate(animationSpec),
+            secondaryContainer = colorScheme.secondaryContainer.animate(animationSpec),
+            tertiary = colorScheme.tertiary.animate(animationSpec),
+            tertiaryContainer = colorScheme.tertiaryContainer.animate(animationSpec),
+            background = colorScheme.background.animate(animationSpec),
+            surface = colorScheme.surface.animate(animationSpec),
+            surfaceTint = colorScheme.surfaceTint.animate(animationSpec),
+            surfaceBright = colorScheme.surfaceBright.animate(animationSpec),
+            surfaceDim = colorScheme.surfaceDim.animate(animationSpec),
+            surfaceContainer = colorScheme.surfaceContainer.animate(animationSpec),
+            surfaceContainerHigh = colorScheme.surfaceContainerHigh.animate(animationSpec),
+            surfaceContainerHighest = colorScheme.surfaceContainerHighest.animate(animationSpec),
+            surfaceContainerLow = colorScheme.surfaceContainerLow.animate(animationSpec),
+            surfaceContainerLowest = colorScheme.surfaceContainerLowest.animate(animationSpec),
+            surfaceVariant = colorScheme.surfaceVariant.animate(animationSpec),
+            error = colorScheme.error.animate(animationSpec),
+            errorContainer = colorScheme.errorContainer.animate(animationSpec),
+            onPrimary = colorScheme.onPrimary.animate(animationSpec),
+            onPrimaryContainer = colorScheme.onPrimaryContainer.animate(animationSpec),
+            onSecondary = colorScheme.onSecondary.animate(animationSpec),
+            onSecondaryContainer = colorScheme.onSecondaryContainer.animate(animationSpec),
+            onTertiary = colorScheme.onTertiary.animate(animationSpec),
+            onTertiaryContainer = colorScheme.onTertiaryContainer.animate(animationSpec),
+            onBackground = colorScheme.onBackground.animate(animationSpec),
+            onSurface = colorScheme.onSurface.animate(animationSpec),
+            onSurfaceVariant = colorScheme.onSurfaceVariant.animate(animationSpec),
+            onError = colorScheme.onError.animate(animationSpec),
+            onErrorContainer = colorScheme.onErrorContainer.animate(animationSpec),
+            inversePrimary = colorScheme.inversePrimary.animate(animationSpec),
+            inverseSurface = colorScheme.inverseSurface.animate(animationSpec),
+            inverseOnSurface = colorScheme.inverseOnSurface.animate(animationSpec),
+            outline = colorScheme.outline.animate(animationSpec),
+            outlineVariant = colorScheme.outlineVariant.animate(animationSpec),
+            scrim = colorScheme.scrim.animate(animationSpec),
+        )
+    }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        content = content
+    )
+}
+
+@Composable
+private fun Color.animate(animationSpec: AnimationSpec<Color>): Color {
+    return animateColorAsState(this, animationSpec).value
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,21 +118,33 @@ fun TwentyFourGame(
 ) {
     var showInstructions by rememberShowInstructions()
 
+    var showSettings by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+
+    if (showSettings) {
+        SettingsSheet(
+            sheetState = sheetState,
+            onDismiss = {
+                scope.launch { sheetState.hide() }
+                    .invokeOnCompletion { showSettings = false }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {},
                 actions = {
-                    Text(
-                        "Hard Mode",
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Switch(
-                        checked = viewModel.isHardMode,
-                        onCheckedChange = viewModel::toggleHardMode,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
+                    IconButton(
+                        onClick = { showSettings = true }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent

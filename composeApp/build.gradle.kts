@@ -49,6 +49,8 @@ kotlin {
             implementation(libs.datastore.core)
             implementation(libs.datastore.preferences)
             implementation(libs.kotlinx.coroutines.core)
+            api(libs.material.kolor)
+            implementation("com.github.skydoves:colorpicker-compose:1.1.1")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

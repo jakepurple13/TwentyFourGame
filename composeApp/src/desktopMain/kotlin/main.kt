@@ -3,8 +3,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.rememberDynamicMaterialThemeState
 import java.util.*
 
 fun main() = application {
@@ -12,13 +15,9 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = "24 Game",
     ) {
-        MaterialTheme(
-            if(isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
-        ) {
-            App(
-                settings = remember { Settings { Settings.DATA_STORE_FILE_NAME } }
-            )
-        }
+        App(
+            settings = remember { Settings { Settings.DATA_STORE_FILE_NAME } }
+        )
     }
 }
 
