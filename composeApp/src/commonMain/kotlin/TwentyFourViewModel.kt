@@ -1,7 +1,3 @@
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -178,53 +174,3 @@ sealed interface HighlightLevel {
     data object Highlighted : HighlightLevel
     data object StronglyHighlighted : HighlightLevel
 }
-
-fun calculatorActions() = listOf(
-    CalculatorUiAction(
-        text = "AC",
-        highlightLevel = HighlightLevel.Highlighted,
-        action = CalculatorAction.Clear
-    ),
-    CalculatorUiAction(
-        text = "()",
-        highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Parentheses
-    ),
-    CalculatorUiAction(
-        text = "÷",
-        highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Op(Operation.DIVIDE)
-    ),
-    CalculatorUiAction(
-        text = "x",
-        highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Op(Operation.MULTIPLY)
-    ),
-    CalculatorUiAction(
-        text = "-",
-        highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Op(Operation.SUBTRACT)
-    ),
-    CalculatorUiAction(
-        text = "+",
-        highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Op(Operation.ADD)
-    ),
-    CalculatorUiAction(
-        text = null,
-        content = {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        },
-        highlightLevel = HighlightLevel.Neutral,
-        action = CalculatorAction.Delete
-    ),
-    /*CalculatorUiAction(
-        text = "=",
-        highlightLevel = HighlightLevel.StronglyHighlighted,
-        action = CalculatorAction.Calculate
-    ),*/
-)

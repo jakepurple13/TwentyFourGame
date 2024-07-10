@@ -7,13 +7,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -164,13 +163,12 @@ fun TwentyFourGame(
                 title = {},
                 actions = {
                     IconButton(
+                        onClick = { showInstructions = true }
+                    ) { Icon(Icons.Default.Info, null) }
+
+                    IconButton(
                         onClick = { showSettings = true }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
-                        )
-                    }
+                    ) { Icon(Icons.Default.Settings, null) }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
@@ -219,7 +217,6 @@ fun TwentyFourGame(
                     onRestart = viewModel::restart,
                     showRestart = viewModel.showAnswer,
                     noSolve = viewModel::noSolve,
-                    onShowInstructions = { showInstructions = true },
                     canSubmit = viewModel.canSubmit,
                     onUndo = viewModel::undo,
                     canUndo = viewModel.fullExpression.isNotEmpty(),
@@ -338,7 +335,6 @@ fun CalculatorButtonGrid(
     onRestart: () -> Unit,
     showRestart: Boolean,
     noSolve: () -> Unit,
-    onShowInstructions: () -> Unit,
     canSubmit: Boolean,
     onUndo: () -> Unit,
     canUndo: Boolean,
@@ -363,6 +359,11 @@ fun CalculatorButtonGrid(
             )
         }
 
+        clearButton(
+            minSize = minSize,
+            onAction = onAction
+        )
+
         items(actions) { action ->
             CalculatorButton(
                 action = action,
@@ -371,49 +372,74 @@ fun CalculatorButtonGrid(
             )
         }
 
-        item {
-            CalculatorButton(
-                action = CalculatorUiAction(
-                    text = null,
-                    content = { Icon(UndoIcon, null) },
-                    highlightLevel = HighlightLevel.StronglyHighlighted,
-                    action = CalculatorAction.Calculate
-                ),
-                enabled = canUndo,
-                modifier = minSize.animateItem(),
-                onClick = onUndo
-            )
-        }
+        undoButton(
+            canUndo = canUndo,
+            minSize = minSize,
+            onUndo = onUndo
+        )
 
+        deleteButton(
+            minSize = minSize,
+            onAction = onAction
+        )
+
+        giveUpButton(
+            showRestart = showRestart,
+            minSize = minSize,
+            onRestart = onRestart,
+            onGiveUp = onGiveUp
+        )
+
+        noSolveButton(
+            isHardMode = isHardMode,
+            showRestart = showRestart,
+            minSize = minSize,
+            noSolve = noSolve
+        )
+
+        item(span = { GridItemSpan(maxCurrentLineSpan - 1) }) {}
+
+        submitButton(
+            showRestart = showRestart,
+            canSubmit = canSubmit,
+            minSize = minSize,
+            onSubmit = onSubmit
+        )
+    }
+}
+
+fun LazyGridScope.submitButton(
+    showRestart: Boolean,
+    canSubmit: Boolean,
+    minSize: Modifier,
+    onSubmit: () -> Unit,
+) {
+    item {
+        CalculatorButton(
+            action = CalculatorUiAction(
+                text = "=",
+                highlightLevel = HighlightLevel.StronglyHighlighted,
+                action = CalculatorAction.Calculate
+            ),
+            enabled = !showRestart && canSubmit,
+            modifier = minSize.animateItem(),
+            onClick = onSubmit
+        )
+    }
+}
+
+fun LazyGridScope.noSolveButton(
+    isHardMode: Boolean,
+    showRestart: Boolean,
+    minSize: Modifier,
+    noSolve: () -> Unit,
+) {
+    if (isHardMode) {
         item {
             if (showRestart) {
-                CalculatorButton(
-                    action = CalculatorUiAction(
-                        text = null,
-                        content = { Icon(Icons.Default.RestartAlt, null) },
-                        highlightLevel = HighlightLevel.StronglyHighlighted,
-                        action = CalculatorAction.Calculate
-                    ),
-                    modifier = minSize.animateItem(),
-                    onClick = onRestart
-                )
-            } else {
-                CalculatorButton(
-                    action = CalculatorUiAction(
-                        text = null,
-                        content = { Icon(Icons.AutoMirrored.Filled.Logout, null) },
-                        highlightLevel = HighlightLevel.StronglyHighlighted,
-                        action = CalculatorAction.Calculate
-                    ),
-                    modifier = minSize.animateItem(),
-                    onClick = onGiveUp
-                )
-            }
-        }
-
-        if (isHardMode) {
-            item {
-                if (showRestart) {
+                ToolTipWrapper(
+                    text = { Text("Hide answer or help") }
+                ) {
                     CalculatorButton(
                         action = CalculatorUiAction(
                             text = null,
@@ -425,7 +451,11 @@ fun CalculatorButtonGrid(
                         modifier = minSize.animateItem(),
                         onClick = noSolve
                     )
-                } else {
+                }
+            } else {
+                ToolTipWrapper(
+                    text = { Text("Check if there is a solution") }
+                ) {
                     CalculatorButton(
                         action = CalculatorUiAction(
                             text = null,
@@ -440,30 +470,120 @@ fun CalculatorButtonGrid(
                 }
             }
         }
+    }
+}
 
-        item {
+fun LazyGridScope.giveUpButton(
+    showRestart: Boolean,
+    minSize: Modifier,
+    onRestart: () -> Unit,
+    onGiveUp: () -> Unit,
+) {
+    item {
+        if (showRestart) {
+            ToolTipWrapper(
+                text = { Text("Restart with new numbers") }
+            ) {
+                CalculatorButton(
+                    action = CalculatorUiAction(
+                        text = null,
+                        content = { Icon(Icons.Default.RestartAlt, null) },
+                        highlightLevel = HighlightLevel.StronglyHighlighted,
+                        action = CalculatorAction.Calculate
+                    ),
+                    modifier = minSize.animateItem(),
+                    onClick = onRestart
+                )
+            }
+        } else {
+            ToolTipWrapper(
+                text = { Text("Give up and see a solution") }
+            ) {
+                CalculatorButton(
+                    action = CalculatorUiAction(
+                        text = null,
+                        content = { Icon(Icons.AutoMirrored.Filled.Logout, null) },
+                        highlightLevel = HighlightLevel.StronglyHighlighted,
+                        action = CalculatorAction.Calculate
+                    ),
+                    modifier = minSize.animateItem(),
+                    onClick = onGiveUp
+                )
+            }
+        }
+    }
+}
+
+fun LazyGridScope.deleteButton(
+    minSize: Modifier,
+    onAction: (CalculatorAction) -> Unit,
+) {
+    item {
+        ToolTipWrapper(
+            text = { Text("Delete") }
+        ) {
+            CalculatorButton(
+                CalculatorUiAction(
+                    text = null,
+                    content = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    highlightLevel = HighlightLevel.Neutral,
+                    action = CalculatorAction.Delete
+                ),
+                modifier = minSize.animateItem(),
+                onClick = { onAction(CalculatorAction.Delete) }
+            )
+        }
+    }
+}
+
+fun LazyGridScope.clearButton(
+    minSize: Modifier,
+    onAction: (CalculatorAction) -> Unit,
+) {
+    item {
+        ToolTipWrapper(
+            title = { Text("All Clear") },
+            text = { Text("Clear current equation") }
+        ) {
+            CalculatorButton(
+                CalculatorUiAction(
+                    text = "AC",
+                    highlightLevel = HighlightLevel.Highlighted,
+                    action = CalculatorAction.Clear
+                ),
+                modifier = minSize.animateItem(),
+                onClick = { onAction(CalculatorAction.Clear) }
+            )
+        }
+    }
+
+}
+
+fun LazyGridScope.undoButton(
+    canUndo: Boolean,
+    minSize: Modifier,
+    onUndo: () -> Unit,
+) {
+    item {
+        ToolTipWrapper(
+            text = { Text("Bring back the last equation") }
+        ) {
             CalculatorButton(
                 action = CalculatorUiAction(
                     text = null,
-                    content = { Icon(Icons.Default.Info, null) },
+                    content = { Icon(UndoIcon, null) },
                     highlightLevel = HighlightLevel.StronglyHighlighted,
                     action = CalculatorAction.Calculate
                 ),
+                enabled = canUndo,
                 modifier = minSize.animateItem(),
-                onClick = onShowInstructions
-            )
-        }
-
-        item {
-            CalculatorButton(
-                action = CalculatorUiAction(
-                    text = "✓",
-                    highlightLevel = HighlightLevel.StronglyHighlighted,
-                    action = CalculatorAction.Calculate
-                ),
-                enabled = !showRestart && canSubmit,
-                modifier = minSize.animateItem(),
-                onClick = onSubmit
+                onClick = onUndo
             )
         }
     }
@@ -525,7 +645,13 @@ fun CalculatorButton(
                     is HighlightLevel.SemiHighlighted -> MaterialTheme.colorScheme.inverseOnSurface
                     is HighlightLevel.Highlighted -> MaterialTheme.colorScheme.onTertiary
                     is HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.onPrimary
-                }
+                },
+                disabledContainerColor = when (action.highlightLevel) {
+                    HighlightLevel.Neutral -> MaterialTheme.colorScheme.surfaceVariant
+                    HighlightLevel.SemiHighlighted -> MaterialTheme.colorScheme.inverseSurface
+                    HighlightLevel.Highlighted -> MaterialTheme.colorScheme.tertiary
+                    HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.primary
+                }.copy(alpha = .5f)
             ),
             modifier = modifier
         ) {
@@ -533,3 +659,50 @@ fun CalculatorButton(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ToolTipWrapper(
+    title: (@Composable () -> Unit)? = null,
+    text: @Composable () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        tooltip = {
+            RichTooltip(
+                title = title,
+                text = text
+            )
+        },
+        state = rememberTooltipState()
+    ) { content() }
+}
+
+fun calculatorActions() = listOf(
+    CalculatorUiAction(
+        text = "÷",
+        highlightLevel = HighlightLevel.SemiHighlighted,
+        action = CalculatorAction.Op(Operation.DIVIDE)
+    ),
+    CalculatorUiAction(
+        text = "x",
+        highlightLevel = HighlightLevel.SemiHighlighted,
+        action = CalculatorAction.Op(Operation.MULTIPLY)
+    ),
+    CalculatorUiAction(
+        text = "-",
+        highlightLevel = HighlightLevel.SemiHighlighted,
+        action = CalculatorAction.Op(Operation.SUBTRACT)
+    ),
+    CalculatorUiAction(
+        text = "+",
+        highlightLevel = HighlightLevel.SemiHighlighted,
+        action = CalculatorAction.Op(Operation.ADD)
+    ),
+    CalculatorUiAction(
+        text = "()",
+        highlightLevel = HighlightLevel.SemiHighlighted,
+        action = CalculatorAction.Parentheses
+    ),
+)
