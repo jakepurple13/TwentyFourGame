@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
@@ -37,92 +38,116 @@ fun App(
     settings: Settings,
 ) {
     MaterialTheme {
-        Scaffold { padding ->
-            TwentyFourGame(
-                viewModel = viewModel { TwentyFourViewModel(settings = settings) },
-                modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
-            )
-        }
+        TwentyFourGame(
+            viewModel = viewModel { TwentyFourViewModel(settings = settings) },
+        )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TwentyFourGame(
     viewModel: TwentyFourViewModel = viewModel(),
-    modifier: Modifier = Modifier,
 ) {
     var showInstructions by rememberShowInstructions()
 
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            CalculatorDisplay(
-                expression = viewModel.expression,
-                fullExpression = viewModel.fullExpression,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(
-                        RoundedCornerShape(
-                            bottomStart = 25.dp,
-                            bottomEnd = 25.dp
-                        )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                actions = {
+                    Text(
+                        "Hard Mode",
+                        modifier = Modifier.align(Alignment.CenterVertically)
                     )
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            AnimatedVisibility(
-                viewModel.showAnswer
-            ) { AnswerDisplay(viewModel.answer) }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            CalculatorButtonGrid(
-                fourNumbers = viewModel.fourCalculate,
-                actions = calculatorActions(),
-                onAction = viewModel::onAction,
-                onSubmit = viewModel::submit,
-                onGiveUp = viewModel::giveUp,
-                onRestart = viewModel::restart,
-                showRestart = viewModel.showAnswer,
-                noSolve = viewModel::noSolve,
-                onShowInstructions = { showInstructions = true },
-                canSubmit = viewModel.canSubmit,
-                onUndo = viewModel::undo,
-                canUndo = viewModel.fullExpression.isNotEmpty(),
-                modifier = Modifier.padding(horizontal = 8.dp)
+                    Spacer(Modifier.width(8.dp))
+                    Switch(
+                        checked = viewModel.isHardMode,
+                        onCheckedChange = viewModel::toggleHardMode,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent
+                )
             )
         }
-    }
+    ) { padding ->
+        Surface(
+            modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
+                .fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                CalculatorDisplay(
+                    expression = viewModel.expression,
+                    fullExpression = viewModel.fullExpression,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .clip(
+                            RoundedCornerShape(
+                                bottomStart = 25.dp,
+                                bottomEnd = 25.dp
+                            )
+                        )
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .padding(horizontal = 16.dp)
+                )
 
-    if (showInstructions) {
-        AlertDialog(
-            onDismissRequest = { showInstructions = false },
-            title = { Text("24 Game Instructions") },
-            text = {
-                Text(
-                    """
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AnimatedVisibility(
+                    viewModel.showAnswer
+                ) { AnswerDisplay(viewModel.answer) }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                CalculatorButtonGrid(
+                    fourNumbers = viewModel.fourCalculate,
+                    actions = calculatorActions(),
+                    onAction = viewModel::onAction,
+                    onSubmit = viewModel::submit,
+                    onGiveUp = viewModel::giveUp,
+                    onRestart = viewModel::restart,
+                    showRestart = viewModel.showAnswer,
+                    noSolve = viewModel::noSolve,
+                    onShowInstructions = { showInstructions = true },
+                    canSubmit = viewModel.canSubmit,
+                    onUndo = viewModel::undo,
+                    canUndo = viewModel.fullExpression.isNotEmpty(),
+                    isHardMode = viewModel.isHardMode,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
+        }
+
+        if (showInstructions) {
+            AlertDialog(
+                onDismissRequest = { showInstructions = false },
+                title = { Text("24 Game Instructions") },
+                text = {
+                    Text(
+                        """
                         The 24 puzzle is an arithmetical puzzle in which the objective is to find a way to manipulate four integers so that the end result is 24.
                         For example, for the numbers 4, 7, 8, 8, a possible solution is 
                         (7 - (8/8)) * 4 = 24
                         
                         There might be multiple solutions!
+                        
+                        If you enable Hard Mode, it is possible that there is no solution.
                     """.trimIndent()
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { showInstructions = false }
-                ) { Text("OK") }
-            }
-        )
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { showInstructions = false }
+                    ) { Text("OK") }
+                }
+            )
+        }
     }
 }
 
@@ -212,6 +237,7 @@ fun CalculatorButtonGrid(
     canSubmit: Boolean,
     onUndo: () -> Unit,
     canUndo: Boolean,
+    isHardMode: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val minSize = buttonSize()
@@ -227,7 +253,7 @@ fun CalculatorButtonGrid(
             CalculatorButton(
                 action = action,
                 enabled = action.enabled,
-                modifier = minSize,
+                modifier = minSize.animateItem(),
                 onClick = { onAction(action.action) }
             )
         }
@@ -235,7 +261,7 @@ fun CalculatorButtonGrid(
         items(actions) { action ->
             CalculatorButton(
                 action = action,
-                modifier = minSize,
+                modifier = minSize.animateItem(),
                 onClick = { onAction(action.action) }
             )
         }
@@ -249,7 +275,7 @@ fun CalculatorButtonGrid(
                     action = CalculatorAction.Calculate
                 ),
                 enabled = canUndo,
-                modifier = minSize,
+                modifier = minSize.animateItem(),
                 onClick = onUndo
             )
         }
@@ -263,7 +289,7 @@ fun CalculatorButtonGrid(
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
-                    modifier = minSize,
+                    modifier = minSize.animateItem(),
                     onClick = onRestart
                 )
             } else {
@@ -274,37 +300,39 @@ fun CalculatorButtonGrid(
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
-                    modifier = minSize,
+                    modifier = minSize.animateItem(),
                     onClick = onGiveUp
                 )
             }
         }
 
-        item {
-            if (showRestart) {
-                CalculatorButton(
-                    action = CalculatorUiAction(
-                        text = null,
-                        content = { Icon(Icons.Default.HideSource, null) },
-                        highlightLevel = HighlightLevel.StronglyHighlighted,
-                        action = CalculatorAction.Calculate
-                    ),
-                    enabled = showRestart,
-                    modifier = minSize,
-                    onClick = noSolve
-                )
-            } else {
-                CalculatorButton(
-                    action = CalculatorUiAction(
-                        text = null,
-                        content = { Icon(Icons.Default.QuestionMark, null) },
-                        highlightLevel = HighlightLevel.StronglyHighlighted,
-                        action = CalculatorAction.Calculate
-                    ),
-                    enabled = !showRestart,
-                    modifier = minSize,
-                    onClick = noSolve
-                )
+        if (isHardMode) {
+            item {
+                if (showRestart) {
+                    CalculatorButton(
+                        action = CalculatorUiAction(
+                            text = null,
+                            content = { Icon(Icons.Default.HideSource, null) },
+                            highlightLevel = HighlightLevel.StronglyHighlighted,
+                            action = CalculatorAction.Calculate
+                        ),
+                        enabled = showRestart,
+                        modifier = minSize.animateItem(),
+                        onClick = noSolve
+                    )
+                } else {
+                    CalculatorButton(
+                        action = CalculatorUiAction(
+                            text = null,
+                            content = { Icon(Icons.Default.QuestionMark, null) },
+                            highlightLevel = HighlightLevel.StronglyHighlighted,
+                            action = CalculatorAction.Calculate
+                        ),
+                        enabled = !showRestart,
+                        modifier = minSize.animateItem(),
+                        onClick = noSolve,
+                    )
+                }
             }
         }
 
@@ -316,7 +344,7 @@ fun CalculatorButtonGrid(
                     highlightLevel = HighlightLevel.StronglyHighlighted,
                     action = CalculatorAction.Calculate
                 ),
-                modifier = minSize,
+                modifier = minSize.animateItem(),
                 onClick = onShowInstructions
             )
         }
@@ -329,7 +357,7 @@ fun CalculatorButtonGrid(
                     action = CalculatorAction.Calculate
                 ),
                 enabled = !showRestart && canSubmit,
-                modifier = minSize,
+                modifier = minSize.animateItem(),
                 onClick = onSubmit
             )
         }

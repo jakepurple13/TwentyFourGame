@@ -49,9 +49,16 @@ class TwentyFourViewModel(
     var expression by mutableStateOf("")
         private set
 
+    var isHardMode by mutableStateOf(false)
+        private set
+
     init {
         settings.currentNumbers()
             .onEach { fourNumbers = it }
+            .launchIn(viewModelScope)
+
+        settings.hardMode()
+            .onEach { isHardMode = it }
             .launchIn(viewModelScope)
     }
 
@@ -97,7 +104,13 @@ class TwentyFourViewModel(
 
     fun restart() {
         viewModelScope.launch {
-            settings.updateCurrentNumbers(IntArray(4) { Random.nextInt(1, 10) })
+            var newNumbers = IntArray(4) { Random.nextInt(1, 10) }
+            if (!isHardMode) {
+                while (!solve24(newNumbers)) {
+                    newNumbers = IntArray(4) { Random.nextInt(1, 10) }
+                }
+            }
+            settings.updateCurrentNumbers(newNumbers)
         }
         showAnswer = false
         answer = ""
@@ -131,7 +144,7 @@ class TwentyFourViewModel(
         if(showAnswer) {
             showAnswer = false
         } else {
-            if (solve24(fourNumbers, StringBuilder())) {
+            if (solve24(fourNumbers)) {
                 showAnswer = true
                 answer = "There is a solution."
             } else {
@@ -144,6 +157,10 @@ class TwentyFourViewModel(
     fun undo() {
         writer.expression = fullExpression
         expression = fullExpression
+    }
+
+    fun toggleHardMode(hardMode: Boolean) {
+        viewModelScope.launch { settings.updateHardMode(hardMode) }
     }
 }
 

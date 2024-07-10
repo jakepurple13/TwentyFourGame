@@ -25,6 +25,8 @@ class Settings(
         val INSTRUCTIONS = booleanPreferencesKey("show_instructions")
 
         val CURRENT_NUMBERS = stringPreferencesKey("current_numbers")
+
+        val HARD_MODE = booleanPreferencesKey("hard_mode")
     }
 
     private val defaultFour = IntArray(4) { Random(it).nextInt(1, 10) }
@@ -42,6 +44,16 @@ class Settings(
         dataStore.edit {
             it[CURRENT_NUMBERS] = newNumbers.joinToString("") { number -> number.toString() }
         }
+    }
+
+    fun hardMode() = dataStore.data.map {
+        it[HARD_MODE] ?: false
+    }
+
+    suspend fun updateHardMode(
+        hardMode: Boolean,
+    ) {
+        dataStore.edit { it[HARD_MODE] = hardMode }
     }
 }
 

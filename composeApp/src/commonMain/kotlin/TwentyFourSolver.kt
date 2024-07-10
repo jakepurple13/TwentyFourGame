@@ -13,12 +13,12 @@ class Expr(
     var value: Int = 0,
 )
 
-fun showExpr(e: Expr?, prec: OpType, isRight: Boolean, stringBuilder: StringBuilder) {
+fun showExpr(e: Expr?, prec: OpType, isRight: Boolean, stringBuilder: StringBuilder?) {
     if (e == null) return
     val op = when (e.op) {
         OpType.NUM -> {
             print(e.value)
-            stringBuilder.append(e.value)
+            stringBuilder?.append(e.value)
             return
         }
 
@@ -30,15 +30,15 @@ fun showExpr(e: Expr?, prec: OpType, isRight: Boolean, stringBuilder: StringBuil
 
     if ((e.op == prec && isRight) || e.op < prec) {
         print("(")
-        stringBuilder.append("(")
+        stringBuilder?.append("(")
     }
     showExpr(e.left, e.op, false, stringBuilder)
     print(op)
-    stringBuilder.append(op)
+    stringBuilder?.append(op)
     showExpr(e.right, e.op, true, stringBuilder)
     if ((e.op == prec && isRight) || e.op < prec) {
         print(")")
-        stringBuilder.append(")")
+        stringBuilder?.append(")")
     }
 }
 
@@ -59,7 +59,7 @@ fun evalExpr(e: Expr?): Frac {
 fun solve(
     ea: Array<Expr?>,
     len: Int,
-    stringBuilder: StringBuilder,
+    stringBuilder: StringBuilder?,
 ): Boolean {
     if (len == 1) {
         val final = evalExpr(ea[0])
@@ -96,5 +96,5 @@ fun solve(
 
 fun solve24(
     n: IntArray,
-    stringBuilder: StringBuilder,
+    stringBuilder: StringBuilder? = null,
 ) = solve(Array(N_CARDS) { Expr(value = n[it]) }, N_CARDS, stringBuilder)
