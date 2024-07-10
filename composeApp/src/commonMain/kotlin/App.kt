@@ -354,47 +354,51 @@ fun CalculatorButtonGrid(
             CalculatorButton(
                 action = action,
                 enabled = action.enabled,
-                modifier = minSize.animateItem(),
-                onClick = { onAction(action.action) }
+                onClick = { onAction(action.action) },
+                modifier = minSize
+                    .animateItem()
+                    .fillMaxWidth(),
             )
         }
 
         clearButton(
-            minSize = minSize,
-            onAction = onAction
+            onAction = onAction,
+            minSize = minSize.fillMaxWidth()
         )
 
         items(actions) { action ->
             CalculatorButton(
                 action = action,
-                modifier = minSize.animateItem(),
-                onClick = { onAction(action.action) }
+                onClick = { onAction(action.action) },
+                modifier = minSize
+                    .animateItem()
+                    .fillMaxWidth(),
             )
         }
 
         undoButton(
             canUndo = canUndo,
-            minSize = minSize,
-            onUndo = onUndo
+            onUndo = onUndo,
+            minSize = minSize.fillMaxWidth(),
         )
 
         deleteButton(
-            minSize = minSize,
-            onAction = onAction
+            onAction = onAction,
+            minSize = minSize.fillMaxWidth(),
         )
 
         giveUpButton(
             showRestart = showRestart,
-            minSize = minSize,
             onRestart = onRestart,
-            onGiveUp = onGiveUp
+            onGiveUp = onGiveUp,
+            minSize = minSize.fillMaxWidth(),
         )
 
         noSolveButton(
             isHardMode = isHardMode,
             showRestart = showRestart,
-            minSize = minSize,
-            noSolve = noSolve
+            noSolve = noSolve,
+            minSize = minSize.fillMaxWidth(),
         )
 
         item(span = { GridItemSpan(maxCurrentLineSpan - 1) }) {}
@@ -402,8 +406,8 @@ fun CalculatorButtonGrid(
         submitButton(
             showRestart = showRestart,
             canSubmit = canSubmit,
-            minSize = minSize,
-            onSubmit = onSubmit
+            onSubmit = onSubmit,
+            minSize = minSize.fillMaxWidth(),
         )
     }
 }
