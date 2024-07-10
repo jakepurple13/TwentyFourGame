@@ -79,6 +79,10 @@ class TwentyFourViewModel(
                 enabledNumbers[action.index] = false
             }
 
+            CalculatorAction.Parentheses -> {
+                if (lastNumberIndex.lastOrNull() is Int) return
+            }
+
             else -> {
                 lastNumberIndex.add(null)
             }
