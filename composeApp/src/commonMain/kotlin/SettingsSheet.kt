@@ -36,7 +36,9 @@ fun SettingsSheet(
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.verticalScroll(rememberScrollState())
+            modifier = Modifier
+                .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
         ) {
 
             var hardMode by rememberHardMode()

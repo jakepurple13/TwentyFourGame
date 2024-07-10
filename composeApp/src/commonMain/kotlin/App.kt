@@ -681,6 +681,11 @@ fun ToolTipWrapper(
 
 fun calculatorActions() = listOf(
     CalculatorUiAction(
+        text = "()",
+        highlightLevel = HighlightLevel.SemiHighlighted,
+        action = CalculatorAction.Parentheses
+    ),
+    CalculatorUiAction(
         text = "÷",
         highlightLevel = HighlightLevel.SemiHighlighted,
         action = CalculatorAction.Op(Operation.DIVIDE)
@@ -699,10 +704,5 @@ fun calculatorActions() = listOf(
         text = "+",
         highlightLevel = HighlightLevel.SemiHighlighted,
         action = CalculatorAction.Op(Operation.ADD)
-    ),
-    CalculatorUiAction(
-        text = "()",
-        highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Parentheses
     ),
 )
