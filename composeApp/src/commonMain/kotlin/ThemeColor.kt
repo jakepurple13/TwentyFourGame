@@ -10,4 +10,5 @@ enum class ThemeColor(
     Yellow(Color.Yellow),
     Cyan(Color.Cyan),
     Magenta(Color.Magenta),
+    Custom(Color.Transparent),
 }

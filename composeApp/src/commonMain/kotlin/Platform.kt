@@ -12,3 +12,5 @@ expect fun buttonSize(): Modifier
 
 @Composable
 expect fun colorSchemeSetup(isDarkMode: Boolean, dynamicColor: Boolean): ColorScheme
+
+expect val canHaveAmoled: Boolean

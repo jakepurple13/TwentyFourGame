@@ -53,12 +53,38 @@ fun TwentyFourTheme(
     content: @Composable () -> Unit,
 ) {
     val themeColor by rememberThemeColor()
+    val isAmoled by rememberIsAmoled()
 
     val animationSpec = spring<Color>(stiffness = Spring.StiffnessLow)
 
     val colorScheme = when (themeColor) {
-        ThemeColor.Dynamic -> colorSchemeSetup(darkTheme, dynamicColor)
-        else -> rememberDynamicColorScheme(themeColor.seedColor, darkTheme)
+        ThemeColor.Dynamic -> colorSchemeSetup(darkTheme, dynamicColor).let {
+            if (isAmoled && darkTheme) {
+                it.copy(
+                    surface = Color.Black,
+                    onSurface = Color.White,
+                    background = Color.Black,
+                    onBackground = Color.White
+                )
+            } else {
+                it
+            }
+        }
+
+        ThemeColor.Custom -> {
+            val customColor by rememberCustomColor()
+            rememberDynamicColorScheme(
+                seedColor = customColor,
+                isDark = darkTheme,
+                isAmoled = isAmoled
+            )
+        }
+
+        else -> rememberDynamicColorScheme(
+            seedColor = themeColor.seedColor,
+            isDark = darkTheme,
+            isAmoled = isAmoled
+        )
     }.let { colorScheme ->
         colorScheme.copy(
             primary = colorScheme.primary.animate(animationSpec),

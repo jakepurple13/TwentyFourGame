@@ -18,3 +18,5 @@ actual fun buttonSize(): Modifier = Modifier.aspectRatio(1f)
 actual fun colorSchemeSetup(isDarkMode: Boolean, dynamicColor: Boolean): ColorScheme {
     return rememberDynamicMaterialThemeState(Color(0xFF009DFF), isDarkMode).colorScheme
 }
+
+actual val canHaveAmoled: Boolean = true

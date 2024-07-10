@@ -1,4 +1,6 @@
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -29,6 +31,10 @@ class Settings(
         val HARD_MODE = booleanPreferencesKey("hard_mode")
 
         val THEME_COLOR = stringPreferencesKey("theme_color")
+
+        val CUSTOM_COLOR = intPreferencesKey("custom_color")
+
+        val IS_AMOLED = booleanPreferencesKey("is_amoled")
     }
 
     private val defaultFour = IntArray(4) { Random(it).nextInt(1, 10) }
@@ -77,6 +83,20 @@ fun rememberThemeColor() = rememberPreference(
     mapToKey = { it.name },
     mapToType = { runCatching { ThemeColor.valueOf(it) }.getOrDefault(ThemeColor.Dynamic) },
     defaultValue = ThemeColor.Dynamic
+)
+
+@Composable
+fun rememberCustomColor() = rememberPreference(
+    key = Settings.CUSTOM_COLOR,
+    mapToType = { Color(it) },
+    mapToKey = { it.toArgb() },
+    defaultValue = Color.LightGray
+)
+
+@Composable
+fun rememberIsAmoled() = rememberPreference(
+    key = Settings.IS_AMOLED,
+    defaultValue = false
 )
 
 @Composable
