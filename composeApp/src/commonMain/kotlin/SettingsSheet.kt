@@ -53,18 +53,20 @@ fun SettingsSheet(
                 )
             }
 
-            var isAmoled by rememberIsAmoled()
-            Card(
-                onClick = { isAmoled = !isAmoled },
-            ) {
-                ListItem(
-                    headlineContent = { Text("Enable Amoled") },
-                    trailingContent = { Switch(checked = isAmoled, onCheckedChange = { isAmoled = it }) },
-                    supportingContent = {
-                        Text("This will make backgrounds and surfaces black to save battery on AMOLED screens.")
-                    },
-                    modifier = Modifier.clickable { isAmoled = !isAmoled }
-                )
+            if (canHaveAmoled) {
+                var isAmoled by rememberIsAmoled()
+                Card(
+                    onClick = { isAmoled = !isAmoled },
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Enable Amoled") },
+                        trailingContent = { Switch(checked = isAmoled, onCheckedChange = { isAmoled = it }) },
+                        supportingContent = {
+                            Text("This will make backgrounds and surfaces black to save battery on AMOLED screens.")
+                        },
+                        modifier = Modifier.clickable { isAmoled = !isAmoled }
+                    )
+                }
             }
 
             var showThemes by remember { mutableStateOf(false) }
