@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 class TwentyFourViewModel(
     private val writer: ExpressionWriter = ExpressionWriter(),
@@ -15,7 +14,7 @@ class TwentyFourViewModel(
     var answer by mutableStateOf("")
         private set
 
-    private var fourNumbers by mutableStateOf(IntArray(4) { Random.nextInt(1, 10) })
+    private var fourNumbers by mutableStateOf(randomNumbers())
 
     private val enabledNumbers = mutableStateListOf(true, true, true, true)
 
@@ -79,10 +78,6 @@ class TwentyFourViewModel(
                 enabledNumbers[action.index] = false
             }
 
-            CalculatorAction.Parentheses -> {
-                if (lastNumberIndex.lastOrNull() is Int) return
-            }
-
             else -> {
                 lastNumberIndex.add(null)
             }
@@ -104,10 +99,10 @@ class TwentyFourViewModel(
 
     fun restart() {
         viewModelScope.launch {
-            var newNumbers = IntArray(4) { Random.nextInt(1, 10) }
+            var newNumbers = randomNumbers()
             if (!isHardMode) {
                 while (!solve24(newNumbers)) {
-                    newNumbers = IntArray(4) { Random.nextInt(1, 10) }
+                    newNumbers = randomNumbers()
                 }
             }
             settings.updateCurrentNumbers(newNumbers)
@@ -132,7 +127,7 @@ class TwentyFourViewModel(
                 .toDoubleOrNull()
                 ?.roundToInt()
                 ?.let {
-                    if (it == 24) {
+                    if (it == SOLVE_GOAL) {
                         showAnswer = true
                         answer = "Correct!"
                     }
@@ -157,10 +152,6 @@ class TwentyFourViewModel(
     fun undo() {
         writer.expression = fullExpression
         expression = fullExpression
-    }
-
-    fun toggleHardMode(hardMode: Boolean) {
-        viewModelScope.launch { settings.updateHardMode(hardMode) }
     }
 }
 
