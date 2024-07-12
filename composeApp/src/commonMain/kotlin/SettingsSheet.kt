@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,7 +19,35 @@ import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DrawerSheet(
+    onDismiss: () -> Unit,
+    drawerState: DrawerState,
+    content: @Composable () -> Unit,
+) {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                TopAppBar(
+                    title = { Text("Settings") },
+                    actions = {
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.Default.Close, null)
+                        }
+                    }
+                )
+                Spacer(Modifier.height(8.dp))
+                SheetContent()
+            }
+        },
+        gesturesEnabled = false,
+        content = content
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsSheet(
     sheetState: SheetState,
@@ -34,119 +64,124 @@ fun SettingsSheet(
                 containerColor = Color.Transparent
             )
         )
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .navigationBarsPadding()
-                .verticalScroll(rememberScrollState())
+        SheetContent()
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SheetContent() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .navigationBarsPadding()
+            .verticalScroll(rememberScrollState())
+    ) {
+        var hardMode by rememberHardMode()
+        Card(
+            onClick = { hardMode = !hardMode },
         ) {
+            ListItem(
+                headlineContent = { Text("Hard Mode") },
+                trailingContent = { Switch(checked = hardMode, onCheckedChange = { hardMode = it }) },
+                supportingContent = {
+                    Text("If Hard Mode is enabled, it is possible that there is no solution.")
+                },
+                modifier = Modifier.clickable { hardMode = !hardMode }
+            )
+        }
 
-            var hardMode by rememberHardMode()
+        if (canHaveAmoled) {
+            var isAmoled by rememberIsAmoled()
             Card(
-                onClick = { hardMode = !hardMode },
+                onClick = { isAmoled = !isAmoled },
             ) {
                 ListItem(
-                    headlineContent = { Text("Hard Mode") },
-                    trailingContent = { Switch(checked = hardMode, onCheckedChange = { hardMode = it }) },
+                    headlineContent = { Text("Enable Amoled") },
+                    trailingContent = { Switch(checked = isAmoled, onCheckedChange = { isAmoled = it }) },
                     supportingContent = {
-                        Text("If Hard Mode is enabled, it is possible that there is no solution.")
+                        Text("This will make backgrounds and surfaces black to save battery on AMOLED screens.")
                     },
-                    modifier = Modifier.clickable { hardMode = !hardMode }
+                    modifier = Modifier.clickable { isAmoled = !isAmoled }
                 )
             }
+        }
 
-            if (canHaveAmoled) {
-                var isAmoled by rememberIsAmoled()
-                Card(
-                    onClick = { isAmoled = !isAmoled },
+        var showThemes by remember { mutableStateOf(false) }
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            modifier = Modifier.animateContentSize()
+        ) {
+            var themeColor by rememberThemeColor()
+
+            ListItem(
+                headlineContent = { Text("Theme") },
+                trailingContent = { Text(themeColor.name) },
+                supportingContent = { Text("Select a theme to use in the app.") },
+                modifier = Modifier.clickable { showThemes = !showThemes }
+            )
+
+            var customColor by rememberCustomColor()
+
+            AnimatedVisibility(showThemes) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    ListItem(
-                        headlineContent = { Text("Enable Amoled") },
-                        trailingContent = { Switch(checked = isAmoled, onCheckedChange = { isAmoled = it }) },
-                        supportingContent = {
-                            Text("This will make backgrounds and surfaces black to save battery on AMOLED screens.")
-                        },
-                        modifier = Modifier.clickable { isAmoled = !isAmoled }
-                    )
-                }
-            }
-
-            var showThemes by remember { mutableStateOf(false) }
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                modifier = Modifier.animateContentSize()
-            ) {
-                var themeColor by rememberThemeColor()
-
-                ListItem(
-                    headlineContent = { Text("Theme") },
-                    trailingContent = { Text(themeColor.name) },
-                    supportingContent = { Text("Select a theme to use in the app.") },
-                    modifier = Modifier.clickable { showThemes = !showThemes }
-                )
-
-                var customColor by rememberCustomColor()
-
-                AnimatedVisibility(showThemes) {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        ThemeColor
-                            .entries
-                            .filter { it != ThemeColor.Custom }
-                            .forEach {
-                                SuggestionChip(
-                                    onClick = { themeColor = it },
-                                    label = { Text(it.name) },
-                                    icon = {
-                                        ColorBox(
-                                            color = if (it == ThemeColor.Dynamic)
-                                                MaterialTheme.colorScheme.primary
-                                            else
-                                                it.seedColor
-                                        )
-                                    },
-                                    border = SuggestionChipDefaults.suggestionChipBorder(
-                                        true,
-                                        borderColor = if (it == ThemeColor.Dynamic)
+                    ThemeColor
+                        .entries
+                        .filter { it != ThemeColor.Custom }
+                        .forEach {
+                            SuggestionChip(
+                                onClick = { themeColor = it },
+                                label = { Text(it.name) },
+                                icon = {
+                                    ColorBox(
+                                        color = if (it == ThemeColor.Dynamic)
                                             MaterialTheme.colorScheme.primary
                                         else
                                             it.seedColor
                                     )
+                                },
+                                border = SuggestionChipDefaults.suggestionChipBorder(
+                                    true,
+                                    borderColor = if (it == ThemeColor.Dynamic)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        it.seedColor
                                 )
-                            }
-
-                        SuggestionChip(
-                            onClick = { themeColor = ThemeColor.Custom },
-                            label = { Text(ThemeColor.Custom.name) },
-                            icon = { ColorBox(color = customColor) },
-                            border = SuggestionChipDefaults.suggestionChipBorder(
-                                true,
-                                borderColor = customColor
                             )
-                        )
-                    }
-                }
+                        }
 
-                AnimatedVisibility(
-                    showThemes && themeColor == ThemeColor.Custom
-                ) {
-                    val controller = rememberColorPickerController()
-                    HsvColorPicker(
-                        onColorChanged = { colorEnvelope: ColorEnvelope ->
-                            customColor = colorEnvelope.color
-                        },
-                        controller = controller,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(450.dp)
-                            .padding(10.dp),
+                    SuggestionChip(
+                        onClick = { themeColor = ThemeColor.Custom },
+                        label = { Text(ThemeColor.Custom.name) },
+                        icon = { ColorBox(color = customColor) },
+                        border = SuggestionChipDefaults.suggestionChipBorder(
+                            true,
+                            borderColor = customColor
+                        )
                     )
                 }
+            }
+
+            AnimatedVisibility(
+                showThemes && themeColor == ThemeColor.Custom
+            ) {
+                val controller = rememberColorPickerController()
+                HsvColorPicker(
+                    onColorChanged = { colorEnvelope: ColorEnvelope ->
+                        customColor = colorEnvelope.color
+                    },
+                    controller = controller,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(450.dp)
+                        .padding(10.dp),
+                )
             }
         }
     }

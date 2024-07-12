@@ -20,3 +20,5 @@ actual fun colorSchemeSetup(isDarkMode: Boolean, dynamicColor: Boolean): ColorSc
 }
 
 actual val canHaveAmoled: Boolean = true
+
+actual val isMobile: Boolean = true

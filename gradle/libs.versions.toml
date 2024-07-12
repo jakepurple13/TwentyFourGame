@@ -12,6 +12,7 @@ androidx-material = "1.12.0"
 androidx-test-junit = "1.2.0"
 colorpickerCompose = "1.1.1"
 compose-plugin = "1.7.0-alpha01"
+cupertino = "0.1.0-alpha04"
 junit = "4.13.2"
 kotlin = "2.0.0"
 lifecycleViewmodelCompose = "2.8.0"
@@ -21,6 +22,10 @@ materialKolor = "1.7.0"
 
 [libraries]
 colorpicker-compose = { module = "com.github.skydoves:colorpicker-compose", version.ref = "colorpickerCompose" }
+cupertino-adaptive = { module = "io.github.alexzhirkevich:cupertino-adaptive", version.ref = "cupertino" }
+cupertino = { module = "io.github.alexzhirkevich:cupertino", version.ref = "cupertino" }
+cupertino-icons-extended = { module = "io.github.alexzhirkevich:cupertino-icons-extended", version.ref = "cupertino" }
+cupertino-native = { module = "io.github.alexzhirkevich:cupertino-native", version.ref = "cupertino" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

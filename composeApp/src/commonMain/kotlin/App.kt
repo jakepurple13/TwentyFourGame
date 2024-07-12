@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalAdaptiveApi::class)
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.AnimationSpec
@@ -29,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.rememberDynamicColorScheme
+import io.github.alexzhirkevich.cupertino.adaptive.*
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -37,7 +40,12 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun App(
     settings: Settings,
 ) {
-    TwentyFourTheme {
+    AdaptiveTheme(
+        material = MaterialThemeSpec.Default(
+            colorScheme = buildColorScheme()
+        ),
+        cupertino = CupertinoThemeSpec.Default(),
+    ) {
         TwentyFourGame(
             viewModel = viewModel { TwentyFourViewModel(settings = settings) },
         )
@@ -45,18 +53,17 @@ fun App(
 }
 
 @Composable
-fun TwentyFourTheme(
+fun buildColorScheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
-    content: @Composable () -> Unit,
-) {
+): ColorScheme {
     val themeColor by rememberThemeColor()
     val isAmoled by rememberIsAmoled()
 
     val animationSpec = spring<Color>(stiffness = Spring.StiffnessLow)
 
-    val colorScheme = when (themeColor) {
+    return when (themeColor) {
         ThemeColor.Dynamic -> colorSchemeSetup(darkTheme, dynamicColor).let {
             if (isAmoled && darkTheme) {
                 it.copy(
@@ -124,11 +131,6 @@ fun TwentyFourTheme(
             scrim = colorScheme.scrim.animate(animationSpec),
         )
     }
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
 }
 
 @Composable
@@ -144,6 +146,7 @@ fun TwentyFourGame(
     var showInstructions by rememberShowInstructions()
 
     var showSettings by remember { mutableStateOf(false) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
 
@@ -157,98 +160,101 @@ fun TwentyFourGame(
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {},
-                actions = {
-                    IconButton(
-                        onClick = { showInstructions = true }
-                    ) { Icon(Icons.Default.Info, null) }
+    DrawerSheet(
+        onDismiss = { scope.launch { drawerState.close() } },
+        drawerState = drawerState
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {},
+                    actions = {
+                        IconButton(
+                            onClick = { showInstructions = true }
+                        ) { Icon(Icons.Default.Info, null) }
 
-                    IconButton(
-                        onClick = { showSettings = true }
-                    ) { Icon(Icons.Default.Settings, null) }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                )
-            )
-        }
-    ) { padding ->
-        Surface(
-            modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
-                .fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                CalculatorDisplay(
-                    expression = viewModel.expression,
-                    fullExpression = viewModel.fullExpression,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .clip(
-                            RoundedCornerShape(
-                                bottomStart = 25.dp,
-                                bottomEnd = 25.dp
-                            )
-                        )
-                        .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .padding(horizontal = 16.dp)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                AnimatedVisibility(
-                    viewModel.showAnswer
-                ) { AnswerDisplay(viewModel.answer) }
-
-                Spacer(modifier = Modifier.height(8.dp))
-                CalculatorButtonGrid(
-                    fourNumbers = viewModel.fourCalculate,
-                    actions = calculatorActions(),
-                    onAction = viewModel::onAction,
-                    onSubmit = viewModel::submit,
-                    onGiveUp = viewModel::giveUp,
-                    onRestart = viewModel::restart,
-                    showRestart = viewModel.showAnswer,
-                    noSolve = viewModel::noSolve,
-                    canSubmit = viewModel.canSubmit,
-                    onUndo = viewModel::undo,
-                    canUndo = viewModel.fullExpression.isNotEmpty(),
-                    isHardMode = viewModel.isHardMode,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                        IconButton(
+                            onClick = {
+                                if (isMobile) showSettings = true
+                                else scope.launch { drawerState.open() }
+                            }
+                        ) { Icon(Icons.Default.Settings, null) }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
                 )
             }
-        }
-
-        if (showInstructions) {
-            AlertDialog(
-                onDismissRequest = { showInstructions = false },
-                title = { Text("24 Game Instructions") },
-                text = {
-                    Text(
-                        """
-                        The 24 puzzle is an arithmetical puzzle in which the objective is to find a way to manipulate four integers so that the end result is 24.
-                        For example, for the numbers 4, 7, 8, 8, a possible solution is 
-                        (7 - (8/8)) * 4 = 24
-                        
-                        There might be multiple solutions!
-                        
-                        If you enable Hard Mode, it is possible that there is no solution.
-                    """.trimIndent()
+        ) { padding ->
+            Surface(
+                color = MaterialTheme.colorScheme.background,
+                modifier = Modifier
+                    .padding(bottom = padding.calculateBottomPadding())
+                    .fillMaxSize(),
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    CalculatorDisplay(
+                        expression = viewModel.expression,
+                        fullExpression = viewModel.fullExpression,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .clip(
+                                RoundedCornerShape(
+                                    bottomStart = 25.dp,
+                                    bottomEnd = 25.dp
+                                )
+                            )
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .padding(horizontal = 16.dp)
                     )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = { showInstructions = false }
-                    ) { Text("OK") }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    AnimatedVisibility(
+                        viewModel.showAnswer
+                    ) { AnswerDisplay(viewModel.answer) }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    CalculatorButtonGrid(
+                        fourNumbers = viewModel.fourCalculate,
+                        actions = calculatorActions(),
+                        onAction = viewModel::onAction,
+                        onSubmit = viewModel::submit,
+                        onGiveUp = viewModel::giveUp,
+                        onRestart = viewModel::restart,
+                        showRestart = viewModel.showAnswer,
+                        noSolve = viewModel::noSolve,
+                        canSubmit = viewModel.canSubmit,
+                        onUndo = viewModel::undo,
+                        canUndo = viewModel.fullExpression.isNotEmpty(),
+                        isHardMode = viewModel.isHardMode,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
                 }
-            )
+            }
+
+            if (showInstructions) {
+                AdaptiveAlertDialog(
+                    onDismissRequest = { showInstructions = false },
+                    title = { Text("24 Game Instructions") },
+                    message = { Text(RULES) },
+                    buttons = {
+                        action(
+                            onClick = { showInstructions = false },
+                            title = { Text("OK") },
+                        )
+                    },
+                    adaptation = {
+                        cupertino {
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        }
+                    }
+                )
+            }
         }
     }
 }

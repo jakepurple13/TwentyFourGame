@@ -14,3 +14,5 @@ expect fun buttonSize(): Modifier
 expect fun colorSchemeSetup(isDarkMode: Boolean, dynamicColor: Boolean): ColorScheme
 
 expect val canHaveAmoled: Boolean
+
+expect val isMobile: Boolean

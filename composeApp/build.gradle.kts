@@ -51,6 +51,10 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             api(libs.material.kolor)
             implementation(libs.colorpicker.compose)
+            implementation(libs.cupertino)
+            implementation(libs.cupertino.adaptive)
+            implementation(libs.cupertino.native)
+            implementation(libs.cupertino.icons.extended)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
