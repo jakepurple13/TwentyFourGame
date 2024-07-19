@@ -65,16 +65,23 @@ class ExpressionWriter {
         return newExpression
     }
 
+    fun canProcessParentheses(): Boolean {
+        val openingCount = expression.count { it == '(' }
+        val closingCount = expression.count { it == ')' }
+
+        return when {
+            expression.isEmpty() || expression.last() in "$operationSymbols(" -> true
+            expression.last() in "0123456789)" && openingCount == closingCount -> false
+            else -> true
+        }
+    }
+
     private fun processParentheses() {
         val openingCount = expression.count { it == '(' }
         val closingCount = expression.count { it == ')' }
         expression += when {
-            expression.isEmpty() ||
-                    expression.last() in "$operationSymbols(" -> "("
-
-            expression.last() in "0123456789)" &&
-                    openingCount == closingCount -> return
-
+            expression.isEmpty() || expression.last() in "$operationSymbols(" -> "("
+            expression.last() in "0123456789)" && openingCount == closingCount -> return
             else -> ")"
         }
     }

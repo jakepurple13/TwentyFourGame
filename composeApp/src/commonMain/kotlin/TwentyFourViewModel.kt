@@ -18,7 +18,10 @@ class TwentyFourViewModel(
 
     private val enabledNumbers = mutableStateListOf(true, true, true, true)
 
-    private val lastNumberIndex = mutableListOf<Int?>()
+    var error by mutableStateOf<String?>(null)
+        private set
+
+    private val lastNumberIndex = mutableListOf<CalculatorAction>()
 
     val fourCalculate by derivedStateOf {
         fourNumbers.mapIndexed { index, i ->
@@ -58,6 +61,8 @@ class TwentyFourViewModel(
     }
 
     fun onAction(action: CalculatorAction) {
+        error = null
+
         when (action) {
             CalculatorAction.Clear -> {
                 for (i in enabledNumbers.indices) {
@@ -68,22 +73,39 @@ class TwentyFourViewModel(
 
             CalculatorAction.Delete -> {
                 lastNumberIndex.removeLastOrNull()?.let {
-                    enabledNumbers[it] = true
+                    if (it is CalculatorAction.Number) {
+                        enabledNumbers[it.index] = true
+                    }
                 }
             }
 
             is CalculatorAction.Number -> {
-                if (lastNumberIndex.lastOrNull() is Int) return
-                lastNumberIndex.add(action.index)
+                if (lastNumberIndex.lastOrNull() is CalculatorAction.Number) return
+                if (lastNumberIndex.lastOrNull() is CalculatorAction.Parentheses && expression.lastOrNull() == ')') return
+                lastNumberIndex.add(action)
                 enabledNumbers[action.index] = false
             }
 
+            is CalculatorAction.Op -> {
+                if (lastNumberIndex.lastOrNull() is CalculatorAction.Op) return
+                lastNumberIndex.add(action)
+            }
+
+            is CalculatorAction.Parentheses -> {
+                if (writer.canProcessParentheses()) {
+                    lastNumberIndex.add(action)
+                } else {
+                    return
+                }
+            }
+
             else -> {
-                lastNumberIndex.add(null)
+                lastNumberIndex.add(action)
             }
         }
+
         writer.processAction(action)
-        this.expression = writer.expression
+        expression = writer.expression
     }
 
     fun giveUp() {
@@ -121,22 +143,30 @@ class TwentyFourViewModel(
     fun submit() {
         if (enabledNumbers.all { !it }) {
             fullExpression = expression
-            writer.processAction(CalculatorAction.Calculate)
-            expression = writer.expression
-            expression
-                .toDoubleOrNull()
-                ?.roundToInt()
-                ?.let {
-                    if (it == SOLVE_GOAL) {
-                        showAnswer = true
-                        answer = "Correct!"
-                    }
+            runCatching {
+                writer.processAction(CalculatorAction.Calculate)
+                expression = writer.expression
+            }
+                .onSuccess {
+                    expression
+                        .toDoubleOrNull()
+                        ?.roundToInt()
+                        ?.let {
+                            if (it == SOLVE_GOAL) {
+                                showAnswer = true
+                                answer = "Correct!"
+                            }
+                        }
+                }
+                .onFailure {
+                    error = "Invalid Input"
+                    expression = ""
                 }
         }
     }
 
     fun noSolve() {
-        if(showAnswer) {
+        if (showAnswer) {
             showAnswer = false
         } else {
             if (solve24(fourNumbers)) {

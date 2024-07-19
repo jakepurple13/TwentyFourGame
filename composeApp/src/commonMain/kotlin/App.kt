@@ -1,9 +1,12 @@
 @file:OptIn(ExperimentalAdaptiveApi::class)
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -24,11 +27,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.text.ParagraphIntrinsics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.rememberDynamicColorScheme
 import io.github.alexzhirkevich.cupertino.adaptive.*
@@ -199,6 +208,7 @@ fun TwentyFourGame(
                     CalculatorDisplay(
                         expression = viewModel.expression,
                         fullExpression = viewModel.fullExpression,
+                        error = viewModel.error,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
@@ -291,44 +301,119 @@ fun AnswerDisplay(
 fun CalculatorDisplay(
     expression: String,
     fullExpression: String,
+    error: String? = null,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    BoxWithConstraints(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        BasicTextField(
-            value = expression,
-            onValueChange = {},
-            textStyle = TextStyle(
+
+        val textFieldSize by autoSizeTextFieldStyle(
+            expression,
+            TextStyle(
                 fontSize = 40.sp,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 textAlign = TextAlign.End
-            ),
-            maxLines = 1,
-            singleLine = true,
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            readOnly = true,
-            modifier = Modifier.fillMaxWidth(),
-            decorationBox = {
-                TextFieldDefaults.DecorationBox(
-                    value = expression,
-                    innerTextField = it,
-                    label = {
-                        Text(
-                            fullExpression,
-                            fontSize = 20.sp,
+            )
+        )
+
+        Column(
+            modifier = Modifier.animateContentSize()
+        ) {
+            BasicTextField(
+                value = expression,
+                onValueChange = {},
+                textStyle = TextStyle(
+                    fontSize = animateFloatAsState(textFieldSize.value).value.sp,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    textAlign = TextAlign.End
+                ),
+                /*textStyle = TextStyle(
+                    fontSize = 40.sp,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    textAlign = TextAlign.End
+                ),*/
+                maxLines = 1,
+                singleLine = true,
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                readOnly = true,
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = {
+                    TextFieldDefaults.DecorationBox(
+                        value = expression,
+                        innerTextField = it,
+                        label = {
+                            var multiplier by remember { mutableStateOf(1f) }
+
+                            Text(
+                                fullExpression,
+                                fontSize = multiplier * 20.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Visible,
+                                onTextLayout = { result ->
+                                    if (result.hasVisualOverflow) {
+                                        multiplier *= 0.99f // you can tune this constant
+                                    }
+                                }
+                            )
+                        },
+                        enabled = true,
+                        singleLine = true,
+                        interactionSource = remember { MutableInteractionSource() },
+                        visualTransformation = VisualTransformation.None,
+                        container = {},
+                        isError = error != null,
+                    )
+                },
+            )
+
+            AnimatedContent(targetState = error) { target ->
+                target?.let {
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(
+                            top = 8.dp,
+                            start = 16.dp,
+                            end = 16.dp
                         )
-                    },
-                    enabled = true,
-                    singleLine = true,
-                    interactionSource = remember { MutableInteractionSource() },
-                    visualTransformation = VisualTransformation.None,
-                    container = {}
-                )
-            },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BoxWithConstraintsScope.autoSizeTextFieldStyle(
+    text: String,
+    textStyle: TextStyle = TextStyle.Default,
+): MutableState<TextUnit> {
+    val nFontSize = remember { mutableStateOf(textStyle.fontSize) }
+
+    val calculateIntrinsics = @Composable {
+        ParagraphIntrinsics(
+            text = text,
+            style = textStyle.copy(fontSize = nFontSize.value),
+            density = LocalDensity.current,
+            fontFamilyResolver = LocalFontFamilyResolver.current,
         )
     }
+
+    var intrinsics = calculateIntrinsics()
+
+    val maxInputWidth = maxWidth - 2 * 16.dp
+
+    with(LocalDensity.current) {
+        while (intrinsics.maxIntrinsicWidth > maxInputWidth.toPx()) {
+            nFontSize.value *= 0.9f
+            intrinsics = calculateIntrinsics()
+        }
+    }
+
+    return nFontSize
 }
 
 @Composable
