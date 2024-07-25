@@ -711,6 +711,24 @@ fun LazyGridScope.undoButton(
 }
 
 @Composable
+fun hapticInteractionSource(
+    hapticFeedbackType: HapticFeedbackType = HapticFeedbackType.LongPress,
+    enabled: Boolean = true,
+): MutableInteractionSource {
+    val haptic = LocalHapticFeedback.current
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    LaunchedEffect(isPressed) {
+        if (isPressed && enabled) {
+            haptic.performHapticFeedback(hapticFeedbackType)
+        }
+    }
+
+    return interactionSource
+}
+
+@Composable
 fun CalculatorButton(
     action: CalculatorUiAction,
     useHaptics: Boolean = true,
@@ -718,15 +736,7 @@ fun CalculatorButton(
     enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
-    val haptic = LocalHapticFeedback.current
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    LaunchedEffect(isPressed) {
-        if (isPressed && useHaptics) {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        }
-    }
+    val interactionSource = hapticInteractionSource(enabled = useHaptics)
 
     if (action.text != null) {
         TextButton(
