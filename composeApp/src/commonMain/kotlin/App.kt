@@ -10,6 +10,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
@@ -27,8 +28,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.ParagraphIntrinsics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
@@ -432,6 +435,7 @@ fun CalculatorButtonGrid(
     isHardMode: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val useHaptics by rememberUseHaptic()
     val minSize = buttonSize()
 
     LazyVerticalGrid(
@@ -446,6 +450,7 @@ fun CalculatorButtonGrid(
                 action = action,
                 enabled = action.enabled,
                 onClick = { onAction(action.action) },
+                useHaptics = useHaptics,
                 modifier = minSize
                     .animateItem()
                     .fillMaxWidth(),
@@ -454,6 +459,7 @@ fun CalculatorButtonGrid(
 
         clearButton(
             onAction = onAction,
+            useHaptics = useHaptics,
             minSize = minSize.fillMaxWidth()
         )
 
@@ -461,6 +467,7 @@ fun CalculatorButtonGrid(
             CalculatorButton(
                 action = action,
                 onClick = { onAction(action.action) },
+                useHaptics = useHaptics,
                 modifier = minSize
                     .animateItem()
                     .fillMaxWidth(),
@@ -470,11 +477,13 @@ fun CalculatorButtonGrid(
         undoButton(
             canUndo = canUndo,
             onUndo = onUndo,
+            useHaptics = useHaptics,
             minSize = minSize.fillMaxWidth(),
         )
 
         deleteButton(
             onAction = onAction,
+            useHaptics = useHaptics,
             minSize = minSize.fillMaxWidth(),
         )
 
@@ -482,6 +491,7 @@ fun CalculatorButtonGrid(
             showRestart = showRestart,
             onRestart = onRestart,
             onGiveUp = onGiveUp,
+            useHaptics = useHaptics,
             minSize = minSize.fillMaxWidth(),
         )
 
@@ -489,6 +499,7 @@ fun CalculatorButtonGrid(
             isHardMode = isHardMode,
             showRestart = showRestart,
             noSolve = noSolve,
+            useHaptics = useHaptics,
             minSize = minSize.fillMaxWidth(),
         )
 
@@ -498,6 +509,7 @@ fun CalculatorButtonGrid(
             showRestart = showRestart,
             canSubmit = canSubmit,
             onSubmit = onSubmit,
+            useHaptics = useHaptics,
             minSize = minSize.fillMaxWidth(),
         )
     }
@@ -507,6 +519,7 @@ fun LazyGridScope.submitButton(
     showRestart: Boolean,
     canSubmit: Boolean,
     minSize: Modifier,
+    useHaptics: Boolean,
     onSubmit: () -> Unit,
 ) {
     item {
@@ -518,7 +531,8 @@ fun LazyGridScope.submitButton(
             ),
             enabled = !showRestart && canSubmit,
             modifier = minSize.animateItem(),
-            onClick = onSubmit
+            onClick = onSubmit,
+            useHaptics = useHaptics,
         )
     }
 }
@@ -527,6 +541,7 @@ fun LazyGridScope.noSolveButton(
     isHardMode: Boolean,
     showRestart: Boolean,
     minSize: Modifier,
+    useHaptics: Boolean,
     noSolve: () -> Unit,
 ) {
     if (isHardMode) {
@@ -544,7 +559,8 @@ fun LazyGridScope.noSolveButton(
                         ),
                         enabled = showRestart,
                         modifier = minSize.animateItem(),
-                        onClick = noSolve
+                        onClick = noSolve,
+                        useHaptics = useHaptics,
                     )
                 }
             } else {
@@ -561,6 +577,7 @@ fun LazyGridScope.noSolveButton(
                         enabled = !showRestart,
                         modifier = minSize.animateItem(),
                         onClick = noSolve,
+                        useHaptics = useHaptics,
                     )
                 }
             }
@@ -573,6 +590,7 @@ fun LazyGridScope.giveUpButton(
     minSize: Modifier,
     onRestart: () -> Unit,
     onGiveUp: () -> Unit,
+    useHaptics: Boolean,
 ) {
     item {
         if (showRestart) {
@@ -587,7 +605,8 @@ fun LazyGridScope.giveUpButton(
                         action = CalculatorAction.Calculate
                     ),
                     modifier = minSize.animateItem(),
-                    onClick = onRestart
+                    onClick = onRestart,
+                    useHaptics = useHaptics,
                 )
             }
         } else {
@@ -602,7 +621,8 @@ fun LazyGridScope.giveUpButton(
                         action = CalculatorAction.Calculate
                     ),
                     modifier = minSize.animateItem(),
-                    onClick = onGiveUp
+                    onClick = onGiveUp,
+                    useHaptics = useHaptics,
                 )
             }
         }
@@ -611,6 +631,7 @@ fun LazyGridScope.giveUpButton(
 
 fun LazyGridScope.deleteButton(
     minSize: Modifier,
+    useHaptics: Boolean,
     onAction: (CalculatorAction) -> Unit,
 ) {
     item {
@@ -631,7 +652,8 @@ fun LazyGridScope.deleteButton(
                     action = CalculatorAction.Delete
                 ),
                 modifier = minSize.animateItem(),
-                onClick = { onAction(CalculatorAction.Delete) }
+                onClick = { onAction(CalculatorAction.Delete) },
+                useHaptics = useHaptics,
             )
         }
     }
@@ -639,6 +661,7 @@ fun LazyGridScope.deleteButton(
 
 fun LazyGridScope.clearButton(
     minSize: Modifier,
+    useHaptics: Boolean,
     onAction: (CalculatorAction) -> Unit,
 ) {
     item {
@@ -653,7 +676,8 @@ fun LazyGridScope.clearButton(
                     action = CalculatorAction.Clear
                 ),
                 modifier = minSize.animateItem(),
-                onClick = { onAction(CalculatorAction.Clear) }
+                onClick = { onAction(CalculatorAction.Clear) },
+                useHaptics = useHaptics,
             )
         }
     }
@@ -663,6 +687,7 @@ fun LazyGridScope.clearButton(
 fun LazyGridScope.undoButton(
     canUndo: Boolean,
     minSize: Modifier,
+    useHaptics: Boolean,
     onUndo: () -> Unit,
 ) {
     item {
@@ -678,7 +703,8 @@ fun LazyGridScope.undoButton(
                 ),
                 enabled = canUndo,
                 modifier = minSize.animateItem(),
-                onClick = onUndo
+                onClick = onUndo,
+                useHaptics = useHaptics,
             )
         }
     }
@@ -687,10 +713,21 @@ fun LazyGridScope.undoButton(
 @Composable
 fun CalculatorButton(
     action: CalculatorUiAction,
+    useHaptics: Boolean = true,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    LaunchedEffect(isPressed) {
+        if (isPressed && useHaptics) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    }
+
     if (action.text != null) {
         TextButton(
             onClick,
@@ -710,6 +747,7 @@ fun CalculatorButton(
                     is HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.onPrimary
                 }
             ),
+            interactionSource = interactionSource,
             modifier = modifier
         ) {
             Text(
@@ -748,6 +786,7 @@ fun CalculatorButton(
                     HighlightLevel.StronglyHighlighted -> MaterialTheme.colorScheme.primary
                 }.copy(alpha = .5f)
             ),
+            interactionSource = interactionSource,
             modifier = modifier
         ) {
             action.content()

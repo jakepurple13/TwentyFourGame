@@ -35,6 +35,8 @@ class Settings(
         val CUSTOM_COLOR = intPreferencesKey("custom_color")
 
         val IS_AMOLED = booleanPreferencesKey("is_amoled")
+
+        val USE_HAPTIC = booleanPreferencesKey("use_haptic")
     }
 
     private val defaultFour = IntArray(4) { Random(it).nextInt(1, 10) }
@@ -97,6 +99,12 @@ fun rememberCustomColor() = rememberPreference(
 fun rememberIsAmoled() = rememberPreference(
     key = Settings.IS_AMOLED,
     defaultValue = false
+)
+
+@Composable
+fun rememberUseHaptic() = rememberPreference(
+    key = Settings.USE_HAPTIC,
+    defaultValue = true
 )
 
 @Composable

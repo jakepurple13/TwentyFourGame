@@ -91,6 +91,19 @@ private fun SheetContent() {
             )
         }
 
+        var useHaptic by rememberUseHaptic()
+
+        Card(
+            onClick = { useHaptic = !useHaptic },
+        ) {
+            ListItem(
+                headlineContent = { Text("Use Haptics") },
+                trailingContent = { Switch(checked = useHaptic, onCheckedChange = { useHaptic = it }) },
+            )
+        }
+
+        HorizontalDivider()
+
         if (canHaveAmoled) {
             var isAmoled by rememberIsAmoled()
             Card(
