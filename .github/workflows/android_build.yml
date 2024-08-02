@@ -2,6 +2,8 @@ name: Android Release Workflow
 
 on:
   push:
+    branches:
+      - master
     tags:
       - 'v*'
     paths-ignore:
@@ -13,6 +15,11 @@ on:
 #        description: 'Release to Google Play?'
 #        required: true
 #        default: 'false'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   apk:
     name: Generate APK
