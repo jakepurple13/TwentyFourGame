@@ -121,12 +121,12 @@ compose.desktop {
                 iconFile.set(iconFile("icns"))
             }
             windows {
-                iconFile.set(iconFile("ico"))
+                //iconFile.set(iconFile("ico"))
                 dirChooser = true
                 console = true
             }
             linux {
-                iconFile.set(iconFile("png"))
+                //iconFile.set(iconFile("png"))
             }
         }
     }
