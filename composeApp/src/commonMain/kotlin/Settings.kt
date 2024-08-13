@@ -1,4 +1,5 @@
-import androidx.compose.runtime.*
+//TODO: Need to figure out how to have this code written once instead of in ios, desktop, and android
+/*import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.datastore.core.DataStore
@@ -9,8 +10,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
-import kotlin.random.Random
+import kotlin.random.Random*/
 
+/*
 private lateinit var dataStore: DataStore<Preferences>
 
 class Settings(
@@ -173,4 +175,4 @@ fun <T, R> rememberPreference(
             override fun component2(): (R) -> Unit = { value = it }
         }
     }
-}
+}*/

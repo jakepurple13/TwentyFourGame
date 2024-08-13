@@ -1,6 +1,8 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -10,6 +12,25 @@ plugins {
 }
 
 kotlin {
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        moduleName = "composeApp"
+        browser {
+            val projectDirPath = project.projectDir.path
+            commonWebpackConfig {
+                outputFileName = "composeApp.js"
+                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+                    static = (static ?: mutableListOf()).apply {
+                        // Serve sources to debug inside browser
+                        add(projectDirPath)
+                    }
+                }
+            }
+        }
+        binaries.executable()
+    }
+
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -36,6 +57,9 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.datastore.core)
+            implementation(libs.datastore.preferences)
+            implementation(libs.colorpicker.compose)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -46,11 +70,10 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.lifecycle.viewmodel.compose)
-            implementation(libs.datastore.core)
-            implementation(libs.datastore.preferences)
+            /*implementation(libs.datastore.core)
+            implementation(libs.datastore.preferences)*/
             implementation(libs.kotlinx.coroutines.core)
             api(libs.material.kolor)
-            implementation(libs.colorpicker.compose)
             implementation(libs.cupertino)
             implementation(libs.cupertino.adaptive)
             implementation(libs.cupertino.native)
@@ -59,6 +82,15 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(libs.datastore.core)
+            implementation(libs.datastore.preferences)
+            implementation(libs.colorpicker.compose)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.datastore.core)
+            implementation(libs.datastore.preferences)
+            implementation(libs.colorpicker.compose)
         }
     }
 }
