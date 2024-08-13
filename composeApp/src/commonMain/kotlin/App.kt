@@ -452,7 +452,7 @@ fun CalculatorButtonGrid(
                 onClick = { onAction(action.action) },
                 useHaptics = useHaptics,
                 modifier = minSize
-                    //.animateItem()
+                    .animateItem()
                     .fillMaxWidth(),
             )
         }
@@ -469,7 +469,7 @@ fun CalculatorButtonGrid(
                 onClick = { onAction(action.action) },
                 useHaptics = useHaptics,
                 modifier = minSize
-                    //.animateItem()
+                    .animateItem()
                     .fillMaxWidth(),
             )
         }
@@ -530,7 +530,7 @@ fun LazyGridScope.submitButton(
                 action = CalculatorAction.Calculate
             ),
             enabled = !showRestart && canSubmit,
-            modifier = minSize,//.animateItem(),
+            modifier = minSize.animateItem(),
             onClick = onSubmit,
             useHaptics = useHaptics,
         )
@@ -558,7 +558,7 @@ fun LazyGridScope.noSolveButton(
                             action = CalculatorAction.Calculate
                         ),
                         enabled = showRestart,
-                        modifier = minSize,//.animateItem(),
+                        modifier = minSize.animateItem(),
                         onClick = noSolve,
                         useHaptics = useHaptics,
                     )
@@ -575,7 +575,7 @@ fun LazyGridScope.noSolveButton(
                             action = CalculatorAction.Calculate
                         ),
                         enabled = !showRestart,
-                        modifier = minSize,//.animateItem(),
+                        modifier = minSize.animateItem(),
                         onClick = noSolve,
                         useHaptics = useHaptics,
                     )
@@ -604,7 +604,7 @@ fun LazyGridScope.giveUpButton(
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
-                    modifier = minSize,//.animateItem(),
+                    modifier = minSize.animateItem(),
                     onClick = onRestart,
                     useHaptics = useHaptics,
                 )
@@ -620,7 +620,7 @@ fun LazyGridScope.giveUpButton(
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
-                    modifier = minSize,//.animateItem(),
+                    modifier = minSize.animateItem(),
                     onClick = onGiveUp,
                     useHaptics = useHaptics,
                 )
@@ -651,7 +651,7 @@ fun LazyGridScope.deleteButton(
                     highlightLevel = HighlightLevel.Neutral,
                     action = CalculatorAction.Delete
                 ),
-                modifier = minSize,//.animateItem(),
+                modifier = minSize.animateItem(),
                 onClick = { onAction(CalculatorAction.Delete) },
                 useHaptics = useHaptics,
             )
@@ -675,7 +675,7 @@ fun LazyGridScope.clearButton(
                     highlightLevel = HighlightLevel.Highlighted,
                     action = CalculatorAction.Clear
                 ),
-                modifier = minSize,//.animateItem(),
+                modifier = minSize.animateItem(),
                 onClick = { onAction(CalculatorAction.Clear) },
                 useHaptics = useHaptics,
             )
@@ -702,7 +702,7 @@ fun LazyGridScope.undoButton(
                     action = CalculatorAction.Calculate
                 ),
                 enabled = canUndo,
-                modifier = minSize,//.animateItem(),
+                modifier = minSize.animateItem(),
                 onClick = onUndo,
                 useHaptics = useHaptics,
             )
