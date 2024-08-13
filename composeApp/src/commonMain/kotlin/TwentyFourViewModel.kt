@@ -104,7 +104,8 @@ class TwentyFourViewModel(
             }
         }
 
-        writer.processAction(action)
+        runCatching { writer.processAction(action) }
+            .onFailure { it.printStackTrace() }
         expression = writer.expression
     }
 
