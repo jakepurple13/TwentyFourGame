@@ -15,9 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.github.skydoves.colorpicker.compose.ColorEnvelope
-import com.github.skydoves.colorpicker.compose.HsvColorPicker
-import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -184,7 +181,8 @@ private fun SheetContent() {
             AnimatedVisibility(
                 showThemes && themeColor == ThemeColor.Custom
             ) {
-                val controller = rememberColorPickerController()
+                ColorPicker { customColor = it }
+                /*val controller = rememberColorPickerController()
                 HsvColorPicker(
                     onColorChanged = { colorEnvelope: ColorEnvelope ->
                         customColor = colorEnvelope.color
@@ -194,7 +192,7 @@ private fun SheetContent() {
                         .fillMaxWidth()
                         .height(450.dp)
                         .padding(10.dp),
-                )
+                )*/
             }
         }
     }
