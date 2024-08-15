@@ -4,12 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.materialkolor.rememberDynamicMaterialThemeState
+import kotlinx.browser.localStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -38,51 +42,88 @@ actual fun ColorPicker(
 
 }
 
-private val hardModeFlow = MutableStateFlow(false)
-private val themeFlow = MutableStateFlow(ThemeColor.Dynamic)
-private val colorFlow = MutableStateFlow(Color.LightGray)
-
 actual class Settings actual constructor(
     producePath: () -> String,
 ) {
-    private val currentNumbersFlow = MutableStateFlow(randomNumbers())
+    private val currentNumbersFlow = SettingPreference(
+        key = "currentNumbers",
+        defaultValue = randomNumbers(),
+        valueToString = { it.joinToString(",") },
+        valueFromString = { it.split(",").map { it.toInt() }.toIntArray() }
+    )
 
-    actual fun currentNumbers(): Flow<IntArray> = currentNumbersFlow
+    actual fun currentNumbers(): Flow<IntArray> = currentNumbersFlow.asFlow()
 
     actual suspend fun updateCurrentNumbers(newNumbers: IntArray) {
-        currentNumbersFlow.value = newNumbers
+        currentNumbersFlow.update(newNumbers)
     }
 
-    actual fun hardMode(): Flow<Boolean> = hardModeFlow
+    actual fun hardMode(): Flow<Boolean> = hardModeFlow.asFlow()
 
     actual suspend fun updateHardMode(hardMode: Boolean) {
-        hardModeFlow.value = hardMode
+        hardModeFlow.update(hardMode)
     }
 }
 
-@Composable
-actual fun rememberShowInstructions(): MutableState<Boolean> = rememberPreference(
-    remember { MutableStateFlow(true) }
+private val hardModeFlow = SettingPreference(
+    key = "hardMode",
+    defaultValue = false,
+    valueToString = { if (it == true) "true" else "false" },
+    valueFromString = { it.toBooleanStrict() }
+)
+
+private val themeFlow = SettingPreference(
+    key = "theme",
+    defaultValue = ThemeColor.Dynamic,
+    valueToString = { it.name },
+    valueFromString = { ThemeColor.valueOf(it) }
+)
+
+private val colorFlow = SettingPreference(
+    key = "color",
+    defaultValue = Color.LightGray,
+    valueToString = { it.toArgb().toString() },
+    valueFromString = { Color(it.toLong()) }
+)
+
+private val showInstructionsFlow = SettingPreference(
+    key = "showInstructions",
+    defaultValue = true,
+    valueToString = { if (it == true) "true" else "false" },
+    valueFromString = { it.toBooleanStrict() }
 )
 
 @Composable
-actual fun rememberHardMode(): MutableState<Boolean> = rememberPreference(hardModeFlow)
+actual fun rememberShowInstructions(): MutableState<Boolean> = showInstructionsFlow.rememberPreference()
 
 @Composable
-actual fun rememberThemeColor(): MutableState<ThemeColor> = rememberPreference(themeFlow)
+actual fun rememberHardMode(): MutableState<Boolean> = hardModeFlow.rememberPreference()
 
 @Composable
-actual fun rememberCustomColor(): MutableState<Color> = rememberPreference(colorFlow)
+actual fun rememberThemeColor(): MutableState<ThemeColor> = themeFlow.rememberPreference()
 
 @Composable
-actual fun rememberIsAmoled(): MutableState<Boolean> = rememberPreference(
-    remember { MutableStateFlow(false) }
+actual fun rememberCustomColor(): MutableState<Color> = colorFlow.rememberPreference()
+
+private val isAmoledFlow = SettingPreference(
+    key = "isAmoled",
+    defaultValue = false,
+    valueToString = { if (it == true) "true" else "false" },
+    valueFromString = { it.toBooleanStrict() }
 )
 
 @Composable
-actual fun rememberUseHaptic(): MutableState<Boolean> = rememberPreference(
-    remember { MutableStateFlow(true) }
+actual fun rememberIsAmoled(): MutableState<Boolean> = isAmoledFlow.rememberPreference()
+
+private val useHapticFlow = SettingPreference(
+    key = "useHaptic",
+    defaultValue = true,
+    valueToString = { if (it == true) "true" else "false" },
+    valueFromString = { it.toBooleanStrict() }
 )
+
+@Composable
+actual fun rememberUseHaptic(): MutableState<Boolean> = useHapticFlow.rememberPreference()
 
 @Composable
 fun <R> rememberPreference(
@@ -101,6 +142,52 @@ fun <R> rememberPreference(
 
             override fun component1() = value
             override fun component2(): (R) -> Unit = { value = it }
+        }
+    }
+}
+
+open class SettingPreference<T>(
+    private val key: String,
+    defaultValue: T,
+    private val valueToString: (T) -> String,
+    private val valueFromString: (String) -> T,
+) {
+    private var state = mutableStateOf(
+        localStorage.getItem(key).let {
+            runCatching { valueFromString(it!!) }.getOrElse { defaultValue }
+        }
+    )
+
+    operator fun getValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>): T {
+        return state.value
+    }
+
+    operator fun setValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>, value: T) {
+        state.value = value
+        localStorage.setItem(key, valueToString(value))
+    }
+
+    fun asFlow() = snapshotFlow { state.value }
+
+    fun update(value: T) {
+        state.value = value
+        localStorage.setItem(key, valueToString(value))
+    }
+
+    @Composable
+    fun rememberPreference(): MutableState<T> {
+        return remember(state) {
+            object : MutableState<T> {
+                override var value: T
+                    get() = state.value
+                    set(value) {
+                        state.value = value
+                        localStorage.setItem(key, valueToString(value))
+                    }
+
+                override fun component1() = value
+                override fun component2(): (T) -> Unit = { value = it }
+            }
         }
     }
 }
