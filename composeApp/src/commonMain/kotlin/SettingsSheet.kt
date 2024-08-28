@@ -1,13 +1,22 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.materialkolor.ktx.from
+import com.materialkolor.palettes.TonalPalette
+import com.materialkolor.rememberDynamicColorScheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -145,35 +157,22 @@ private fun SheetContent() {
                         .entries
                         .filter { it != ThemeColor.Custom }
                         .forEach {
-                            SuggestionChip(
+                            ThemeItem(
                                 onClick = { themeColor = it },
-                                label = { Text(it.name) },
-                                icon = {
-                                    ColorBox(
-                                        color = if (it == ThemeColor.Dynamic)
-                                            MaterialTheme.colorScheme.primary
-                                        else
-                                            it.seedColor
-                                    )
-                                },
-                                border = SuggestionChipDefaults.suggestionChipBorder(
-                                    true,
-                                    borderColor = if (it == ThemeColor.Dynamic)
-                                        MaterialTheme.colorScheme.primary
-                                    else
-                                        it.seedColor
-                                )
+                                selected = themeColor == it,
+                                themeColor = it,
+                                colorScheme = if (it == ThemeColor.Dynamic)
+                                    MaterialTheme.colorScheme
+                                else
+                                    rememberDynamicColorScheme(it.seedColor, isDark = isSystemInDarkTheme())
                             )
                         }
 
-                    SuggestionChip(
+                    ThemeItem(
                         onClick = { themeColor = ThemeColor.Custom },
-                        label = { Text(ThemeColor.Custom.name) },
-                        icon = { ColorBox(color = customColor) },
-                        border = SuggestionChipDefaults.suggestionChipBorder(
-                            true,
-                            borderColor = customColor
-                        )
+                        selected = themeColor == ThemeColor.Custom,
+                        themeColor = ThemeColor.Custom,
+                        colorScheme = rememberDynamicColorScheme(customColor, isDark = isSystemInDarkTheme())
                     )
                 }
             }
@@ -206,4 +205,137 @@ fun ColorBox(color: Color) {
             .background(color)
             .size(20.dp)
     )
+}
+
+@Composable
+fun ThemeItem(
+    onClick: () -> Unit,
+    selected: Boolean,
+    themeColor: ThemeColor,
+    colorScheme: ColorScheme,
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.inverseOnSurface,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(8.dp)
+        ) {
+            SelectableMiniPalette(
+                selected = selected,
+                colorScheme = colorScheme
+            )
+
+            Text(themeColor.name)
+        }
+    }
+}
+
+@Composable
+fun SelectableMiniPalette(
+    modifier: Modifier = Modifier,
+    selected: Boolean,
+    onClick: (() -> Unit)? = null,
+    colorScheme: ColorScheme,
+) {
+    SelectableMiniPalette(
+        modifier = modifier,
+        selected = selected,
+        onClick = onClick,
+        accents = remember(colorScheme) {
+            listOf(
+                TonalPalette.from(colorScheme.primary),
+                TonalPalette.from(colorScheme.secondary),
+                TonalPalette.from(colorScheme.tertiary)
+            )
+        }
+    )
+}
+
+@Composable
+fun SelectableMiniPaletteWithSurface(
+    modifier: Modifier = Modifier,
+    selected: Boolean,
+    onClick: (() -> Unit)? = null,
+    accents: List<TonalPalette>,
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.inverseOnSurface,
+    ) {
+        SelectableMiniPalette(
+            modifier = modifier,
+            selected = selected,
+            onClick = onClick,
+            accents = accents
+        )
+    }
+}
+
+@Composable
+fun SelectableMiniPalette(
+    modifier: Modifier = Modifier,
+    selected: Boolean,
+    onClick: (() -> Unit)? = null,
+    accents: List<TonalPalette>,
+) {
+    val content: @Composable () -> Unit = {
+        Box {
+            Surface(
+                modifier = Modifier
+                    .size(50.dp)
+                    .offset((-25).dp, 25.dp),
+                color = Color(accents[1].tone(85)),
+            ) {}
+            Surface(
+                modifier = Modifier
+                    .size(50.dp)
+                    .offset(25.dp, 25.dp),
+                color = Color(accents[2].tone(75)),
+            ) {}
+            val animationSpec = spring<Float>(stiffness = Spring.StiffnessMedium)
+            AnimatedVisibility(
+                visible = selected,
+                enter = scaleIn(animationSpec) + fadeIn(animationSpec),
+                exit = scaleOut(animationSpec) + fadeOut(animationSpec),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Check,
+                        contentDescription = "Checked",
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(16.dp),
+                        tint = MaterialTheme.colorScheme.surface
+                    )
+                }
+            }
+        }
+    }
+    onClick?.let {
+        Surface(
+            onClick = onClick,
+            modifier = modifier
+                .padding(12.dp)
+                .size(50.dp),
+            shape = CircleShape,
+            color = Color(accents[0].tone(60)),
+        ) { content() }
+    } ?: Surface(
+        modifier = modifier
+            .padding(12.dp)
+            .size(50.dp),
+        shape = CircleShape,
+        color = Color(accents[0].tone(60)),
+    ) { content() }
 }
