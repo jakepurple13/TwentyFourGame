@@ -68,7 +68,7 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Build Artifacts
-        id: buildApks
+        id: buildApks2
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: current
@@ -78,7 +78,7 @@ jobs:
           arguments: composeApp:assembleRelease
 
       - uses: r0adkll/sign-android-release@v1
-        name: Sign app APK
+        name: Sign app APK2
         id: twentyfourgame_apk_sign
         with:
           releaseDirectory: composeApp/build/outputs/apk/release/
