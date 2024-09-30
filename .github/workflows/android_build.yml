@@ -114,7 +114,7 @@ jobs:
 
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
-        id: twentyfourgame_sign
+        id: twentyfourgame_apk_sign
         with:
           releaseDirectory: composeApp/build/outputs/apk/release/
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
@@ -124,7 +124,7 @@ jobs:
 
       - name: Clean up build artifacts
         run: |
-          cp ${{ steps.twentyfourgame_sign.outputs.signedReleaseFile }} twentyfourgame-release.apk
+          cp ${{ steps.twentyfourgame_apk_sign.outputs.signedReleaseFile }} twentyfourgame-release.apk
 
       - uses: actions/upload-artifact@v3
         with:
