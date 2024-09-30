@@ -21,8 +21,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  apk:
-    name: Generate APK
+  aab:
+    name: Generate AAB
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -76,16 +76,76 @@ jobs:
           name: Signed TwentyFourGame App
           path: twentyfourgame-release.aab
 
+  apk:
+    name: Generate APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: adopt
+          java-version: 21
+
+      - name: Get tag name
+        id: get_tag_name
+        run: |
+          set -x
+          echo "VERSION_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+
+      #      - name: Bump version
+      #        uses: chkfung/android-version-actions@v1.1
+      #        with:
+      #          gradlePath: composeApp/build.gradle.kts
+      #          versionCode: ${{github.run_number}}
+      #          versionName: ${{ env.VERSION_TAG }}
+
+      - name: Build Artifacts
+        id: buildApks
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: current
+          wrapper-cache-enabled: true
+          dependencies-cache-enabled: true
+          configuration-cache-enabled: true
+          arguments: composeApp:assemble
+
+      - uses: r0adkll/sign-android-release@v1
+        name: Sign app APK
+        id: twentyfourgame_sign
+        with:
+          releaseDirectory: composeApp/build/outputs/apk/release/
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Clean up build artifacts
+        run: |
+          cp ${{ steps.twentyfourgame_sign.outputs.signedReleaseFile }} twentyfourgame-release.apk
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Signed TwentyFourGame Apk
+          path: twentyfourgame-release.apk
+
   release:
     name: Release APK
     needs: apk
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - name: Download APK from build
+      - name: Download Aab from build
         uses: actions/download-artifact@v3
         with:
           name: Signed TwentyFourGame App
+
+      - name: Download APK from build
+        uses: actions/download-artifact@v3
+        with:
+          name: Signed TwentyFourGame Apk
 
       - name: Get tag name
         id: get_tag_name
@@ -105,6 +165,7 @@ jobs:
           name: Release ${{ env.VERSION_TAG }}
           files: |
             twentyfourgame-release.aab
+            twentyfourgame-release.apk
 
 #  releaseToGooglePlay:
 #    name: Release to Google Play
