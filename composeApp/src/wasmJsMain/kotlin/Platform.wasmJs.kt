@@ -1,13 +1,6 @@
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.ColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -152,7 +145,7 @@ open class SettingPreference<T>(
     private val valueToString: (T) -> String,
     private val valueFromString: (String) -> T,
 ) {
-    private var state = mutableStateOf(
+    protected open var state = mutableStateOf(
         localStorage.getItem(key).let {
             runCatching { valueFromString(it!!) }.getOrElse { defaultValue }
         }

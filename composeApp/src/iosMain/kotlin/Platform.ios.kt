@@ -3,23 +3,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.*
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
@@ -32,7 +22,6 @@ import kotlinx.coroutines.launch
 import okio.Path.Companion.toPath
 import platform.UIKit.UIDevice
 import kotlin.random.Random
-import kotlin.text.map
 
 class IOSPlatform: Platform {
     override val name: String = UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
@@ -125,9 +114,10 @@ actual class Settings actual constructor(
 }
 
 @Composable
-actual fun rememberShowInstructions() = rememberPreference(
+actual fun rememberShowInstructions() = rememberPreferenceSpecial(
     key = Settings.INSTRUCTIONS,
-    defaultValue = false
+    defaultValue = true,
+    defaultComposeValue = false
 )
 
 @Composable
@@ -180,6 +170,40 @@ fun <T> rememberPreference(
             emptyFlow()
         }
     }.collectAsState(defaultValue)
+
+    return remember(state) {
+        object : MutableState<T> {
+            override var value: T
+                get() = state
+                set(value) {
+                    coroutineScope.launch {
+                        dataStore.edit { it[key] = value }
+                    }
+                }
+
+            override fun component1() = value
+            override fun component2(): (T) -> Unit = { value = it }
+        }
+    }
+}
+
+@Composable
+fun <T> rememberPreferenceSpecial(
+    key: Preferences.Key<T>,
+    defaultValue: T,
+    defaultComposeValue: T,
+): MutableState<T> {
+    val coroutineScope = rememberCoroutineScope()
+    val state by remember(::dataStore.isInitialized) {
+        if (::dataStore.isInitialized) {
+            dataStore
+                .data
+                .mapNotNull { it[key] ?: defaultValue }
+                .distinctUntilChanged()
+        } else {
+            emptyFlow()
+        }
+    }.collectAsState(defaultComposeValue)
 
     return remember(state) {
         object : MutableState<T> {
