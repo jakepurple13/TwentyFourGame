@@ -97,7 +97,7 @@ jobs:
           name: Signed TwentyFourGame App
           path: twentyfourgame-release.aab
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Signed TwentyFourGame Apk
           path: twentyfourgame-release.apk
@@ -164,12 +164,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download Aab from build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Signed TwentyFourGame App
 
       - name: Download APK from build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Signed TwentyFourGame Apk
 
