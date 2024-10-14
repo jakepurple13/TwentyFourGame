@@ -92,7 +92,7 @@ jobs:
           cp ${{ steps.twentyfourgame_sign.outputs.signedReleaseFile }} twentyfourgame-release.aab
           cp ${{ steps.twentyfourgame_apk_sign.outputs.signedReleaseFile }} twentyfourgame-release.apk
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Signed TwentyFourGame App
           path: twentyfourgame-release.aab
