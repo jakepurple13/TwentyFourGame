@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   aab:
-    name: Generate AAB
+    name: Generate Android Builds
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -190,8 +190,8 @@ jobs:
           tag_name: ${{ env.VERSION_TAG }}
           name: Release ${{ env.VERSION_TAG }}
           files: |
-            twentyfourgame-release.aab
-            twentyfourgame-release.apk
+            #            twentyfourgame-release.aab
+            #            twentyfourgame-release.apk
             ${{ github.workspace }}/release-artifacts/**
 
 #  releaseToGooglePlay:
