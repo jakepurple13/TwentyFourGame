@@ -1,18 +1,11 @@
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
-import com.github.skydoves.colorpicker.compose.ColorEnvelope
-import com.github.skydoves.colorpicker.compose.HsvColorPicker
-import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.materialkolor.rememberDynamicMaterialThemeState
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
@@ -39,23 +32,6 @@ actual fun colorSchemeSetup(isDarkMode: Boolean, dynamicColor: Boolean): ColorSc
 actual val canHaveAmoled: Boolean = true
 
 actual val isMobile: Boolean = true
-
-@Composable
-actual fun ColorPicker(
-    onColorChanged: (Color) -> Unit,
-) {
-    val controller = rememberColorPickerController()
-    HsvColorPicker(
-        onColorChanged = { colorEnvelope: ColorEnvelope ->
-            onColorChanged(colorEnvelope.color)
-        },
-        controller = controller,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(450.dp)
-            .padding(10.dp),
-    )
-}
 
 private lateinit var dataStore: DataStore<Preferences>
 

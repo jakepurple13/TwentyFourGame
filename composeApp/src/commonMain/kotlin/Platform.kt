@@ -20,9 +20,6 @@ expect val canHaveAmoled: Boolean
 
 expect val isMobile: Boolean
 
-@Composable
-expect fun ColorPicker(onColorChanged: (Color) -> Unit)
-
 expect class Settings(
     producePath: () -> String,
 ) {

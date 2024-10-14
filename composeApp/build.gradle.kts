@@ -79,19 +79,18 @@ kotlin {
             implementation(libs.cupertino.adaptive)
             implementation(libs.cupertino.native)
             implementation(libs.cupertino.icons.extended)
+            implementation(libs.colorpicker.compose)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.datastore.core)
             implementation(libs.datastore.preferences)
-            implementation(libs.colorpicker.compose)
         }
 
         iosMain.dependencies {
             implementation(libs.datastore.core)
             implementation(libs.datastore.preferences)
-            implementation(libs.colorpicker.compose)
         }
     }
 }

@@ -28,13 +28,6 @@ actual val canHaveAmoled: Boolean = false
 
 actual val isMobile: Boolean = true
 
-@Composable
-actual fun ColorPicker(
-    onColorChanged: (Color) -> Unit,
-) {
-
-}
-
 actual class Settings actual constructor(
     producePath: () -> String,
 ) {

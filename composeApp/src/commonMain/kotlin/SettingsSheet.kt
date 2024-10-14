@@ -15,6 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.github.skydoves.colorpicker.compose.ColorEnvelope
+import com.github.skydoves.colorpicker.compose.HsvColorPicker
+import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.materialkolor.ktx.from
 import com.materialkolor.palettes.TonalPalette
 import com.materialkolor.rememberDynamicColorScheme
@@ -136,7 +139,17 @@ private fun SheetContent() {
                     message = {
                         Column {
                             Text("Select a color to use as the background color of the app.")
-                            ColorPicker { customColor = it }
+                            val controller = rememberColorPickerController()
+                            HsvColorPicker(
+                                onColorChanged = { colorEnvelope: ColorEnvelope ->
+                                    customColor = colorEnvelope.color
+                                },
+                                controller = controller,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(450.dp)
+                                    .padding(10.dp),
+                            )
                         }
                     },
                     buttons = {
