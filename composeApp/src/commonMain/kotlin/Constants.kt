@@ -6,9 +6,9 @@ const val MAX_DIGIT = 9
 
 fun randomNumbers() = IntArray(N_CARDS) { Random.nextInt(1, MAX_DIGIT + 1) }
 
-val RULES = """
-    The 24 puzzle is an arithmetical puzzle in which the objective is to find a way to manipulate four integers so that the end result is 24.
-    
+//The 24 puzzle is an arithmetical puzzle in which the objective is to find a way to manipulate four integers so that the end result is 24.
+
+val RULES = """    
     Add, subtract, multiply, or divide four random numbers to get the answer to equal 24.
     
     Here's an example:
