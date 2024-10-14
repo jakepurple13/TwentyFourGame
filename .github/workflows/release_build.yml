@@ -190,9 +190,9 @@ jobs:
           tag_name: ${{ env.VERSION_TAG }}
           name: Release ${{ env.VERSION_TAG }}
           files: |
-            #            twentyfourgame-release.aab
-            #            twentyfourgame-release.apk
             ${{ github.workspace }}/release-artifacts/**
+#            twentyfourgame-release.aab
+#            twentyfourgame-release.apk
 
 #  releaseToGooglePlay:
 #    name: Release to Google Play
