@@ -8,10 +8,15 @@ fun randomNumbers() = IntArray(N_CARDS) { Random.nextInt(1, MAX_DIGIT + 1) }
 
 val RULES = """
     The 24 puzzle is an arithmetical puzzle in which the objective is to find a way to manipulate four integers so that the end result is 24.
-    For example, for the numbers 4, 7, 8, 8, a possible solution is 
-    (7 - (8/8)) * 4 = 24
     
-    There might be multiple solutions!
+    Add, subtract, multiply, or divide four random numbers to get the answer to equal 24.
     
-    If you enable Hard Mode, it is possible that there is no solution.
+    Here's an example:
+    4, 7, 8, 8
+    Possible Solution:
+    (7 - ( 8 / 8 )) * 4 = 24
+   
+    There may be more than one right answer.
+    
+    Play hard mode and get puzzles with no solution!
 """.trimIndent()

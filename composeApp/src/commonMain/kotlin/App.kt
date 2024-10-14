@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -258,7 +257,7 @@ fun TwentyFourGame(
                     buttons = {
                         action(
                             onClick = { showInstructions = false },
-                            title = { Text("OK") },
+                            title = { Text("Let's Play") },
                         )
                     },
                     adaptation = {
@@ -457,12 +456,6 @@ fun CalculatorButtonGrid(
             )
         }
 
-        clearButton(
-            onAction = onAction,
-            useHaptics = useHaptics,
-            minSize = minSize.fillMaxWidth()
-        )
-
         items(actions) { action ->
             CalculatorButton(
                 action = action,
@@ -474,12 +467,20 @@ fun CalculatorButtonGrid(
             )
         }
 
-        undoButton(
+        clearButton(
+            onAction = onAction,
+            useHaptics = useHaptics,
+            minSize = minSize.fillMaxWidth()
+        )
+
+        item(span = { GridItemSpan(maxCurrentLineSpan - 1) }) {}
+
+        /*undoButton(
             canUndo = canUndo,
             onUndo = onUndo,
             useHaptics = useHaptics,
             minSize = minSize.fillMaxWidth(),
-        )
+        )*/
 
         deleteButton(
             onAction = onAction,
@@ -616,7 +617,7 @@ fun LazyGridScope.giveUpButton(
                 CalculatorButton(
                     action = CalculatorUiAction(
                         text = null,
-                        content = { Icon(Icons.AutoMirrored.Filled.Logout, null) },
+                        content = { Icon(LightbulbOn, null) },
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
@@ -825,11 +826,6 @@ fun ToolTipWrapper(
 
 fun calculatorActions() = listOf(
     CalculatorUiAction(
-        text = "()",
-        highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Parentheses
-    ),
-    CalculatorUiAction(
         text = "÷",
         highlightLevel = HighlightLevel.SemiHighlighted,
         action = CalculatorAction.Op(Operation.DIVIDE)
@@ -848,5 +844,10 @@ fun calculatorActions() = listOf(
         text = "+",
         highlightLevel = HighlightLevel.SemiHighlighted,
         action = CalculatorAction.Op(Operation.ADD)
+    ),
+    CalculatorUiAction(
+        text = "()",
+        highlightLevel = HighlightLevel.SemiHighlighted,
+        action = CalculatorAction.Parentheses
     ),
 )

@@ -1,19 +1,10 @@
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Check
@@ -27,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import com.materialkolor.ktx.from
 import com.materialkolor.palettes.TonalPalette
 import com.materialkolor.rememberDynamicColorScheme
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveAlertDialog
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,13 +70,16 @@ fun SettingsSheet(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalAdaptiveApi::class)
 @Composable
 private fun SheetContent() {
+    var isAmoled by rememberIsAmoled()
+
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .navigationBarsPadding()
+            .padding(vertical = 8.dp)
             .verticalScroll(rememberScrollState())
     ) {
         var hardMode by rememberHardMode()
@@ -113,24 +109,9 @@ private fun SheetContent() {
 
         HorizontalDivider()
 
-        if (canHaveAmoled) {
-            var isAmoled by rememberIsAmoled()
-            Card(
-                onClick = { isAmoled = !isAmoled },
-            ) {
-                ListItem(
-                    headlineContent = { Text("Enable Amoled") },
-                    trailingContent = { Switch(checked = isAmoled, onCheckedChange = { isAmoled = it }) },
-                    supportingContent = {
-                        Text("This will make backgrounds and surfaces black to save battery on AMOLED screens.")
-                    },
-                    modifier = Modifier.clickable { isAmoled = !isAmoled }
-                )
-            }
-        }
-
         var showThemes by remember { mutableStateOf(false) }
         Card(
+            onClick = { showThemes = !showThemes },
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
@@ -142,16 +123,38 @@ private fun SheetContent() {
                 headlineContent = { Text("Theme") },
                 trailingContent = { Text(themeColor.name) },
                 supportingContent = { Text("Select a theme to use in the app.") },
-                modifier = Modifier.clickable { showThemes = !showThemes }
             )
 
             var customColor by rememberCustomColor()
+
+            var showColorPicker by remember { mutableStateOf(false) }
+
+            if (showColorPicker) {
+                AdaptiveAlertDialog(
+                    onDismissRequest = { showColorPicker = false },
+                    title = { Text("Custom Color") },
+                    message = {
+                        Column {
+                            Text("Select a color to use as the background color of the app.")
+                            ColorPicker { customColor = it }
+                        }
+                    },
+                    buttons = {
+                        action(
+                            onClick = { showColorPicker = false },
+                            title = { Text("Done") },
+                        )
+                    },
+                )
+            }
 
             AnimatedVisibility(showThemes) {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
                 ) {
                     ThemeColor
                         .entries
@@ -164,34 +167,43 @@ private fun SheetContent() {
                                 colorScheme = if (it == ThemeColor.Dynamic)
                                     MaterialTheme.colorScheme
                                 else
-                                    rememberDynamicColorScheme(it.seedColor, isDark = isSystemInDarkTheme())
+                                    rememberDynamicColorScheme(
+                                        it.seedColor,
+                                        isAmoled = isAmoled,
+                                        isDark = isSystemInDarkTheme()
+                                    )
                             )
                         }
 
                     ThemeItem(
-                        onClick = { themeColor = ThemeColor.Custom },
+                        onClick = {
+                            themeColor = ThemeColor.Custom
+                            showColorPicker = true
+                        },
                         selected = themeColor == ThemeColor.Custom,
                         themeColor = ThemeColor.Custom,
-                        colorScheme = rememberDynamicColorScheme(customColor, isDark = isSystemInDarkTheme())
+                        colorScheme = rememberDynamicColorScheme(
+                            customColor,
+                            isAmoled = isAmoled,
+                            isDark = isSystemInDarkTheme()
+                        )
                     )
                 }
             }
+        }
 
-            AnimatedVisibility(
-                showThemes && themeColor == ThemeColor.Custom
+        if (canHaveAmoled) {
+            Card(
+                onClick = { isAmoled = !isAmoled },
             ) {
-                ColorPicker { customColor = it }
-                /*val controller = rememberColorPickerController()
-                HsvColorPicker(
-                    onColorChanged = { colorEnvelope: ColorEnvelope ->
-                        customColor = colorEnvelope.color
+                ListItem(
+                    headlineContent = { Text("Enable Amoled") },
+                    trailingContent = { Switch(checked = isAmoled, onCheckedChange = { isAmoled = it }) },
+                    supportingContent = {
+                        Text("This will make backgrounds and surfaces black to save battery on AMOLED screens.")
                     },
-                    controller = controller,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(450.dp)
-                        .padding(10.dp),
-                )*/
+                    modifier = Modifier.clickable { isAmoled = !isAmoled }
+                )
             }
         }
     }

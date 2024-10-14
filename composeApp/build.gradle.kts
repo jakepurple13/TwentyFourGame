@@ -60,6 +60,7 @@ kotlin {
             implementation(libs.datastore.core)
             implementation(libs.datastore.preferences)
             implementation(libs.colorpicker.compose)
+            implementation(libs.androidx.material)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
