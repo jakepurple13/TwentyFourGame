@@ -49,3 +49,5 @@ expect fun rememberIsAmoled(): MutableState<Boolean>
 
 @Composable
 expect fun rememberUseHaptic(): MutableState<Boolean>
+
+expect fun Modifier.semanticSetup(): Modifier

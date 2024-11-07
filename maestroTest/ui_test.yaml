@@ -1,0 +1,38 @@
+appId: com.programmersbox.twentyfourgame
+---
+- tapOn:
+    id: "Subtract"
+- tapOn:
+    id: "button2"
+- tapOn:
+    id: "deleteAC"
+- tapOn:
+    id: "button1"
+- tapOn:
+    id: "Multiply"
+- tapOn:
+    id: "button3"
+- tapOn:
+    id: "Divide"
+- tapOn:
+    id: "button2"
+- tapOn:
+    id: "Add"
+- tapOn:
+    id: "button0"
+- tapOn:
+    id: "delete"
+- tapOn:
+    id: "button0"
+- tapOn:
+    id: "Submit"
+- tapOn:
+    id: "GiveUpButton"
+- tapOn:
+    id: "Solution"
+
+- tapOn:
+    id: "button1"
+
+- tapOn:
+    id: "button3"

@@ -1,9 +1,11 @@
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.semantics.semantics
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import com.materialkolor.rememberDynamicMaterialThemeState
@@ -231,3 +233,6 @@ fun <T, R> rememberPreference(
         }
     }
 }
+
+@OptIn(ExperimentalComposeUiApi::class)
+actual fun Modifier.semanticSetup() = semantics {}

@@ -12,16 +12,61 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.HideSource
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RichTooltip
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberTooltipState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +76,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.ParagraphIntrinsics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
@@ -42,7 +88,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.rememberDynamicColorScheme
-import io.github.alexzhirkevich.cupertino.adaptive.*
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveAlertDialog
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTheme
+import io.github.alexzhirkevich.cupertino.adaptive.CupertinoThemeSpec
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import io.github.alexzhirkevich.cupertino.adaptive.MaterialThemeSpec
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -451,6 +501,7 @@ fun CalculatorButtonGrid(
                 onClick = { onAction(action.action) },
                 useHaptics = useHaptics,
                 modifier = minSize
+                    .then(action.modifier)
                     .animateItem()
                     .fillMaxWidth(),
             )
@@ -462,6 +513,7 @@ fun CalculatorButtonGrid(
                 onClick = { onAction(action.action) },
                 useHaptics = useHaptics,
                 modifier = minSize
+                    .then(action.modifier)
                     .animateItem()
                     .fillMaxWidth(),
             )
@@ -470,7 +522,10 @@ fun CalculatorButtonGrid(
         clearButton(
             onAction = onAction,
             useHaptics = useHaptics,
-            minSize = minSize.fillMaxWidth()
+            minSize = minSize
+                .fillMaxWidth()
+                .semanticSetup()
+                .testTag("deleteAC"),
         )
 
         item(span = { GridItemSpan(maxCurrentLineSpan - 1) }) {}
@@ -485,7 +540,10 @@ fun CalculatorButtonGrid(
         deleteButton(
             onAction = onAction,
             useHaptics = useHaptics,
-            minSize = minSize.fillMaxWidth(),
+            minSize = minSize
+                .fillMaxWidth()
+                .semanticSetup()
+                .testTag("delete"),
         )
 
         giveUpButton(
@@ -493,7 +551,10 @@ fun CalculatorButtonGrid(
             onRestart = onRestart,
             onGiveUp = onGiveUp,
             useHaptics = useHaptics,
-            minSize = minSize.fillMaxWidth(),
+            minSize = minSize
+                .fillMaxWidth()
+                .semanticSetup()
+                .testTag("GiveUpButton"),
         )
 
         noSolveButton(
@@ -501,7 +562,10 @@ fun CalculatorButtonGrid(
             showRestart = showRestart,
             noSolve = noSolve,
             useHaptics = useHaptics,
-            minSize = minSize.fillMaxWidth(),
+            minSize = minSize
+                .fillMaxWidth()
+                .semanticSetup()
+                .testTag("Solution"),
         )
 
         item(span = { GridItemSpan(maxCurrentLineSpan - 1) }) {}
@@ -511,7 +575,10 @@ fun CalculatorButtonGrid(
             canSubmit = canSubmit,
             onSubmit = onSubmit,
             useHaptics = useHaptics,
-            minSize = minSize.fillMaxWidth(),
+            minSize = minSize
+                .fillMaxWidth()
+                .semanticSetup()
+                .testTag("Submit"),
         )
     }
 }
@@ -828,26 +895,41 @@ fun calculatorActions() = listOf(
     CalculatorUiAction(
         text = "÷",
         highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Op(Operation.DIVIDE)
+        action = CalculatorAction.Op(Operation.DIVIDE),
+        modifier = Modifier
+            .semanticSetup()
+            .testTag("Divide"),
     ),
     CalculatorUiAction(
         text = "x",
         highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Op(Operation.MULTIPLY)
+        action = CalculatorAction.Op(Operation.MULTIPLY),
+        modifier = Modifier
+            .semanticSetup()
+            .testTag("Multiply"),
     ),
     CalculatorUiAction(
         text = "-",
         highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Op(Operation.SUBTRACT)
+        action = CalculatorAction.Op(Operation.SUBTRACT),
+        modifier = Modifier
+            .semanticSetup()
+            .testTag("Subtract"),
     ),
     CalculatorUiAction(
         text = "+",
         highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Op(Operation.ADD)
+        action = CalculatorAction.Op(Operation.ADD),
+        modifier = Modifier
+            .semanticSetup()
+            .testTag("Add"),
     ),
     CalculatorUiAction(
         text = "()",
         highlightLevel = HighlightLevel.SemiHighlighted,
-        action = CalculatorAction.Parentheses
+        action = CalculatorAction.Parentheses,
+        modifier = Modifier
+            .semanticSetup()
+            .testTag("Parentheses"),
     ),
 )

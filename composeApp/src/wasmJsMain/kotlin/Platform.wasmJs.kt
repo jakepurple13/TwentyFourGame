@@ -1,9 +1,18 @@
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.ColorScheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.materialkolor.rememberDynamicMaterialThemeState
 import kotlinx.browser.localStorage
@@ -177,3 +186,6 @@ open class SettingPreference<T>(
         }
     }
 }
+
+@OptIn(ExperimentalComposeUiApi::class)
+actual fun Modifier.semanticSetup() = semantics {}
