@@ -1,5 +1,6 @@
 appId: com.programmersbox.twentyfourgame
 ---
+- launchApp
 - tapOn:
     id: "Subtract"
 - tapOn:
