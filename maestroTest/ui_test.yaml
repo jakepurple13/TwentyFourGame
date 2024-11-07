@@ -28,12 +28,10 @@ appId: com.programmersbox.twentyfourgame
 - tapOn:
     id: "Submit"
 - tapOn:
+      id: "Solution"
+- tapOn:
     id: "GiveUpButton"
 - tapOn:
-    id: "Solution"
-
-- tapOn:
     id: "button1"
-
 - tapOn:
     id: "button3"
