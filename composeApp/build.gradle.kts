@@ -11,6 +11,11 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+if (file("google-services.json").exists()) {
+    apply(plugin = libs.plugins.google.gms.google.services.get().pluginId)
+    apply(plugin = libs.plugins.google.firebase.crashlytics.get().pluginId)
+}
+
 kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
@@ -107,8 +112,8 @@ android {
         applicationId = "com.programmersbox.twentyfourgame"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.0"
     }
     packaging {
         resources {
@@ -135,6 +140,9 @@ android {
     }
     dependencies {
         debugImplementation(compose.uiTooling)
+        if (file("google-services.json").exists()) {
+            implementation(libs.firebase.crashlytics)
+        }
     }
 }
 
