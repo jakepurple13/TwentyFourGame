@@ -44,6 +44,8 @@ kotlin {
     }
     
     jvm("desktop")
+
+    applyDefaultHierarchyTemplate()
     
     listOf(
         iosX64(),
