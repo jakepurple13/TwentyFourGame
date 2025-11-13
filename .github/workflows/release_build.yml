@@ -84,6 +84,8 @@ jobs:
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "33.0.0"
 
       - name: Clean up build artifacts
         run: |
@@ -124,7 +126,7 @@ jobs:
           java-version: 18
 
       - name: Cache Gradle dependencies
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
