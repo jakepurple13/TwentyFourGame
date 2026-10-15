@@ -31,6 +31,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.ParagraphIntrinsics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
@@ -181,14 +182,16 @@ fun TwentyFourGame(
                     title = {},
                     actions = {
                         IconButton(
-                            onClick = { showInstructions = true }
+                            onClick = { showInstructions = true },
+                            modifier = Modifier.testTag("info_button")
                         ) { Icon(Icons.Default.Info, null) }
 
                         IconButton(
                             onClick = {
                                 if (isMobile) showSettings = true
                                 else scope.launch { drawerState.open() }
-                            }
+                            },
+                            modifier = Modifier.testTag("settings_button")
                         ) { Icon(Icons.Default.Settings, null) }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -442,7 +445,7 @@ fun CalculatorButtonGrid(
         userScrollEnabled = false,
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier,
+        modifier = modifier.testTag("calculator_grid"),
     ) {
         items(fourNumbers) { action ->
             CalculatorButton(
@@ -605,7 +608,7 @@ fun LazyGridScope.giveUpButton(
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
-                    modifier = minSize.animateItem(),
+                    modifier = minSize.animateItem().testTag("restart_button"),
                     onClick = onRestart,
                     useHaptics = useHaptics,
                 )
@@ -621,7 +624,7 @@ fun LazyGridScope.giveUpButton(
                         highlightLevel = HighlightLevel.StronglyHighlighted,
                         action = CalculatorAction.Calculate
                     ),
-                    modifier = minSize.animateItem(),
+                    modifier = minSize.animateItem().testTag("give_up_button"),
                     onClick = onGiveUp,
                     useHaptics = useHaptics,
                 )
