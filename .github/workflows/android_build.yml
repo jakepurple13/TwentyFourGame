@@ -78,6 +78,11 @@ jobs:
         id: buildApks
         run: ./gradlew :androidApp:bundleRelease :androidApp:assembleRelease
 
+      # zipalign-sign uses the build-tools version in BUILD_TOOLS_VERSION below, which the runner
+      # image does not always ship.
+      - name: Install Android Build Tools
+        run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.0"
+
       - uses: kevin-david/zipalign-sign-android-release@v2.0.1
         name: Sign app APK
         id: twentyfourgame_sign
